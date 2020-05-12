@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
-project(cpp_rt VERSION 0.0.1 DESCRIPTION "A Vulkan based rendering engine" LANGUAGES CXX)
+project(cpp_pt VERSION 0.0.1 DESCRIPTION "A Vulkan based rendering engine" LANGUAGES CXX)
 
 if (NOT CMAKE_BUILD_TYPE)
    set(CMAKE_BUILD_TYPE Release)
@@ -54,4 +54,5 @@ target_sources(${PROJECT_NAME}
    PRIVATE 
       source/main.cpp
       source/ray.cpp
+      source/sphere.cpp
 )
