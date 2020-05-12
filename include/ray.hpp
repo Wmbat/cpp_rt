@@ -1,6 +1,6 @@
 #pragma once
 
-#include <glm/vec3.hpp>
+#include <glm/glm.hpp>
 
 using point = glm::dvec3;
 using vec = point;

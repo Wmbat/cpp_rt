@@ -13,5 +13,5 @@ vec ray::direction() const noexcept
 
 vec ray::at(double time) const noexcept
 {
-   return orig + time * dir;
+   return orig + dir * time;
 }
