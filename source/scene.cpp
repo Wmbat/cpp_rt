@@ -32,7 +32,8 @@ image scene::render(camera const& cam, render_settings const& settings)
                auto const ray = cam.shoot_ray(u, v);
 
                int const new_y = std::abs(y - (settings.window_height - 1));
-               img.add_samples(x, new_y, radiance(ray, 32), 1);
+               auto rad = radiance(ray, settings.u_samples, settings.v_samples, settings.bounce_depth);
+               img.add_samples(x, new_y, rad, 1);
             }
          };
 
@@ -74,59 +75,80 @@ image scene::render(camera const& cam, render_settings const& settings)
    return final_img;
 }
 
-void scene::add_sphere(const sphere& sphere_in, std::shared_ptr<material> material)
+void scene::add_sphere(const sphere& sphere_in, material_info const& material)
 {
    spheres.push_back(sphere_in);
-   sphere_materials.push_back(material);
+   sphere_mats.push_back(material);
 }
 
-void scene::add_sphere(sphere&& sphere_in, std::shared_ptr<material> material)
+void scene::add_sphere(sphere&& sphere_in, material_info&& material)
 {
    spheres.push_back(std::move(sphere_in));
-   sphere_materials.push_back(material);
+   sphere_mats.push_back(std::move(material));
 }
 
-colour scene::radiance(ray const& ray_in, size_t depth)
+colour scene::radiance(const ray& ray_in, size_t u_sample_count, size_t v_sample_count, size_t depth) const
 {
    if (depth <= 0)
    {
       return {0.0, 0.0, 0.0};
    }
 
-   auto const hit_record = intersect(ray_in);
+   const auto hit_record = intersect(ray_in);
    if (!hit_record)
    {
-      vec unit_dir = ray_in.direction() / ray_in.direction().length();
-      auto t = 0.5 * (unit_dir.y + 1.0);
-      return (1.0 - t) * vec(1.0, 1.0, 1.0) + t * vec(0.5, 0.7, 1.0);
+      vec unit_direction = to_unit_vector(ray_in.direction());
+      auto t = 0.5 * (unit_direction.y + 1.0);
+      return (1.0 - t) * colour(1.0, 1.0, 1.0) + t * colour(0.5, 0.7, 1.0);
    }
 
-   auto const& hit = hit_record->hit;
-   auto const& mat = hit_record->material;
+   const auto& hit = hit_record->hit;
+   const auto& mat = hit_record->mat;
 
-   auto scatter = mat->scatter(ray_in, hit);
-   if (scatter)
+   const auto [ior_from, ior_to] =
+      hit.front_face ? std::make_pair(1.0, mat.refraction_index) : std::make_pair(mat.refraction_index, 1.0);
+   const auto reflectivity =
+      mat.reflectivity < 0 ? reflectance(hit.normal, ray_in.direction(), ior_from, ior_to) : mat.reflectivity;
+
+   colour result{};
+
+   for (size_t u_sample = 0; u_sample < u_sample_count; ++u_sample)
    {
-      return scatter->first * radiance(scatter->second, depth - 1);
+      for (size_t v_sample = 0; v_sample < v_sample_count; ++v_sample)
+      {
+         const double u = (u_sample + random_double()) / static_cast<double>(u_sample_count);
+         const double v = (v_sample + random_double()) / static_cast<double>(v_sample_count);
+
+         if (random_double() < reflectivity)
+         {
+            const ray new_ray =
+               ray(hit.position, cone_sample(reflect(hit.normal, ray_in.direction()), mat.reflection_angle, u, v));
+
+            result += mat.emission + radiance(new_ray, u_sample_count, v_sample_count, depth - 1);
+         }
+         else
+         {
+            const ray new_ray = ray(hit.position, hemisphere_sample(ortho_normal_basis::from_z(hit.normal), u, v));
+
+            result += mat.emission + mat.diffuse * radiance(new_ray, u_sample_count, v_sample_count, depth - 1);
+         }
+      }
    }
-   else
-   {
-      return vec{};
-   }
+
+   return result / (u_sample_count * v_sample_count);
 }
 
-std::optional<hit_record> scene::intersect(ray const& ray_in)
+std::optional<hit_record> scene::intersect(ray const& ray_in) const
 {
    return sphere_intersect(ray_in, std::numeric_limits<double>::max());
 }
 
-std::optional<hit_record> scene::sphere_intersect(ray const& ray_in, double nearer_than)
+std::optional<hit_record> scene::sphere_intersect(ray const& ray_in, double nearer_than) const
 {
    double current_nearest = nearer_than;
    std::optional<size_t> nearest_index;
 
-   double epsilon = 0.001;
-
+   constexpr double epsilon = 0.001;
    for (size_t i = 0; i < spheres.size(); ++i)
    {
       auto const oc = ray_in.origin() - spheres[i].center;
@@ -158,14 +180,9 @@ std::optional<hit_record> scene::sphere_intersect(ray const& ray_in, double near
    if (!nearest_index)
       return {};
 
-   auto hit_position = ray_in.position_along(current_nearest);
-   auto normal = (hit_position - spheres[*nearest_index].center) / spheres[*nearest_index].radius;
-   bool inside = dot(normal, ray_in.direction()) > 0;
-
-   if (inside)
-   {
-      normal = -normal;
-   }
+   auto const hit_position = ray_in.position_along(current_nearest);
+   auto const normal = (hit_position - spheres[*nearest_index].center) / spheres[*nearest_index].radius;
+   bool const front_face = dot(normal, ray_in.direction()) < 0;
 
    // clang-format off
    return hit_record
@@ -173,11 +190,11 @@ std::optional<hit_record> scene::sphere_intersect(ray const& ray_in, double near
          .hit = 
          {
             .position = hit_position, 
-            .normal = normal, 
+            .normal = front_face ? normal : -normal, 
             .distance = current_nearest, 
-            .inside = inside
+            .front_face = front_face
          },
-         .material = sphere_materials[*nearest_index]
+         .mat = sphere_mats[*nearest_index]
       };
    // clang-format on
 }

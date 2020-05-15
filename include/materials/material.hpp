@@ -7,16 +7,14 @@
 #include <optional>
 #include <utility>
 
-class material
+struct material_info
 {
-protected:
-   material(colour const& colour_in) : emission(colour_in) {}
+   bool operator==(material_info const& rhs) const = default;
 
-public:
-   using scatter_data = std::pair<colour, ray>;
+   vec emission{};
+   vec diffuse{};
 
-   virtual std::optional<scatter_data> scatter(ray const& ray_in, hit const& hit) const = 0;
-
-protected:
-   colour emission;
+   double refraction_index{1.0};
+   double reflectivity{-1.0};
+   double reflection_angle{0.0};
 };

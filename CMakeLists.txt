@@ -44,6 +44,5 @@ target_sources(${PROJECT_NAME}
       source/scene.cpp
       source/image.cpp
       source/math/vec.cpp
-      source/materials/lambertian.cpp
-      source/materials/metal.cpp
+      source/math/ortho_normal_basis.cpp
 )

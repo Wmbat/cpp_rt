@@ -8,5 +8,5 @@
 struct hit_record
 {
    hit hit;
-   std::shared_ptr<material> material;
+   material_info mat;
 };

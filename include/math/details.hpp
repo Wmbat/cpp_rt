@@ -1,13 +1,48 @@
 #pragma once
 
+#include "math/ortho_nomal_basis.hpp"
 #include "vec.hpp"
 
 #include <cmath>
 #include <random>
 
-inline vec reflect(vec const& v, vec const& n)
+constexpr vec reflect(vec const& v, vec const& n) noexcept
 {
    return v - 2 * dot(v, n) * n;
+}
+
+inline double reflectance(const norm& normal, const norm& incident, double ior_from, double ior_to) noexcept
+{
+   const auto ior_ratio = ior_from / ior_to;
+   const auto cos_theta_i = -dot(normal, incident);
+   const auto sin_theta_t_squared = ior_ratio * ior_ratio * (1 - cos_theta_i * cos_theta_i);
+   if (sin_theta_t_squared > 1)
+   {
+      return 1.0;
+   }
+
+   const auto cos_theta_t = sqrt(1 - sin_theta_t_squared);
+   auto ray_perp = (ior_from * cos_theta_i - ior_to * cos_theta_t) / (ior_from * cos_theta_i + ior_to * cos_theta_t);
+   auto ray_para = (ior_to * cos_theta_i - ior_from * cos_theta_t) / (ior_to * cos_theta_i + ior_from * cos_theta_t);
+
+   return (ray_perp * ray_perp + ray_para * ray_para) / 2;
+}
+
+inline vec refract(vec const& uv, vec const& n, double etai_over_etat) noexcept
+{
+   auto const cos_theta = dot(-uv, n);
+   vec const ray_out_parallel = etai_over_etat * (uv + cos_theta * n);
+   vec const ray_out_perp = -sqrt(1.0 - ray_out_parallel.length_squared()) * n;
+
+   return ray_out_parallel + ray_out_perp;
+}
+
+inline double schlick(double cos, double refractive_index)
+{
+   auto const r_0 = (1 - refractive_index) / (1 + refractive_index);
+   auto const r = r_0 * r_0;
+
+   return r + (1 + r) * pow((1 - cos), 5);
 }
 
 inline double random_double()
@@ -43,4 +78,34 @@ inline vec random_in_unit_sphere()
       }
       return p;
    }
+}
+
+inline double to_radians(double angle) noexcept
+{
+   return angle / (360 * 2 * M_PI);
+}
+
+inline vec cone_sample(const norm& direction, double cone_theta, double u, double v)
+{
+   if (cone_theta < 0.0000001)
+   {
+      return direction;
+   }
+
+   const auto theta = cone_theta * (1.0 - (2.0 * std::acos(u) / M_PI));
+   const auto radius = sin(theta);
+   const auto scale_z = cos(theta);
+   const auto random_theta = v * 2 * M_PI;
+   const auto basis = ortho_normal_basis::from_z(direction);
+
+   return normalise(basis.transform(vec(std::cos(random_theta) * radius, std::sin(random_theta) * radius, scale_z)));
+}
+
+inline vec hemisphere_sample(const ortho_normal_basis& basis, double u, double v)
+{
+   const auto theta = 2 * M_PI * u;
+   const auto radius_squared = v;
+   const auto radius = sqrt(radius_squared);
+
+   return normalise(basis.transform(vec(std::cos(theta) * radius, std::sin(theta) * radius, sqrt(1 - radius_squared))));
 }
