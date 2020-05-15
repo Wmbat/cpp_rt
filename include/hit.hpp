@@ -1,10 +1,11 @@
 #pragma once
 
-#include <glm/glm.hpp>
+#include "math/vec.hpp"
 
 struct hit
 {
-   glm::dvec3 position{0.0, 0.0, 0.0};
-   glm::dvec3 normal{0.0, 0.0, 0.0};
+   vec position{0.0, 0.0, 0.0};
+   vec normal{0.0, 0.0, 0.0};
    double distance{0.0};
+   bool inside{false};
 };

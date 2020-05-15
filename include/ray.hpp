@@ -1,23 +1,19 @@
 #pragma once
 
-#include <glm/glm.hpp>
-
-using point = glm::dvec3;
-using vec = point;
-using colour = point;
+#include "math/vec.hpp"
 
 class ray
 {
 public:
    ray() = default;
-   ray(point const& origin, vec const& direction) noexcept;
+   ray(vec const& origin, vec const& direction) noexcept;
 
-   point origin() const noexcept;
-   vec direction() const noexcept;
+   vec const& origin() const noexcept;
+   vec const& direction() const noexcept;
 
-   vec at(double time) const noexcept;
+   [[nodiscard]] vec position_along(double t) const noexcept;
 
 private:
-   point orig;
+   vec ori;
    vec dir;
 };

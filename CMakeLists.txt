@@ -9,27 +9,13 @@ message(STATUS "[${PROJECT_NAME}] Compiling with ${CMAKE_CXX_COMPILER_ID}")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL "" FORCE)
 
-include(FetchContent)
-
-FetchContent_Declare(glm
-   GIT_REPOSITORY https://github.com/g-truc/glm
-   GIT_TAG 0.9.9.8
-)
-
-message(STATUS "[${PROJECT_NAME}] Fetching glm 0.9.9.8")
-
-FetchContent_MakeAvailable(glm)
-
 add_executable(${PROJECT_NAME})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_EXTENSIONS OFF)
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 
-target_link_libraries(${PROJECT_NAME}
-   PRIVATE
-      glm
-)
+target_link_libraries(${PROJECT_NAME} PRIVATE -pthread)
 
 target_compile_options(${PROJECT_NAME}
    PRIVATE
@@ -53,6 +39,11 @@ target_include_directories(${PROJECT_NAME}
 target_sources(${PROJECT_NAME}
    PRIVATE 
       source/main.cpp
+      source/pixel.cpp
       source/ray.cpp
-      source/sphere.cpp
+      source/scene.cpp
+      source/image.cpp
+      source/math/vec.cpp
+      source/materials/lambertian.cpp
+      source/materials/metal.cpp
 )

@@ -1,17 +1,17 @@
 #include "ray.hpp"
 
-ray::ray(point const& origin, vec const& direction) noexcept : orig(origin), dir(direction) {}
+ray::ray(vec const& origin, vec const& direction) noexcept : ori(origin), dir(direction) {}
 
-point ray::origin() const noexcept
+vec const& ray::origin() const noexcept
 {
-   return orig;
+   return ori;
 }
-vec ray::direction() const noexcept
+vec const& ray::direction() const noexcept
 {
    return dir;
 }
 
-vec ray::at(double time) const noexcept
+vec ray::position_along(double t) const noexcept
 {
-   return orig + dir * time;
+   return ori + dir * t;
 }
