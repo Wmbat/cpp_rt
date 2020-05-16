@@ -15,13 +15,22 @@ auto dielectric::scatter(
 
    if (sin_t_squared > 1.0) // total internal reflection
    {
-      vec reflected = reflect(hit_in.normal, unit_dir);
-
       // clang-format off
       return scatter_data {
          .emission = colour{}, 
          .diffuse = diffuse, 
-         .scattered_ray = ray(hit_in.position, reflected)
+         .scattered_ray = ray(hit_in.position, reflect(hit_in.normal, unit_dir))
+      };
+      // clang-format on
+   }
+
+   if (random_double() < schlick(cos_i, ior_ratio))
+   {
+      // clang-format off
+      return scatter_data {
+         .emission = colour{}, 
+         .diffuse = diffuse, 
+         .scattered_ray = ray(hit_in.position, reflect(hit_in.normal, unit_dir))
       };
       // clang-format on
    }

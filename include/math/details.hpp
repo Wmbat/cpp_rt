@@ -11,23 +11,6 @@ constexpr vec reflect(const vec& normal, const vec& incident) noexcept
    return incident - 2 * dot(normal, incident) * normal;
 }
 
-inline double reflectance(const norm& normal, const norm& incident, double ior_from, double ior_to) noexcept
-{
-   const auto ior_ratio = ior_from / ior_to;
-   const auto cos_theta_i = -dot(normal, incident);
-   const auto sin_theta_t_squared = ior_ratio * ior_ratio * (1 - cos_theta_i * cos_theta_i);
-   if (sin_theta_t_squared > 1)
-   {
-      return 1.0;
-   }
-
-   const auto cos_theta_t = sqrt(1 - sin_theta_t_squared);
-   auto ray_perp = (ior_from * cos_theta_i - ior_to * cos_theta_t) / (ior_from * cos_theta_i + ior_to * cos_theta_t);
-   auto ray_para = (ior_to * cos_theta_i - ior_from * cos_theta_t) / (ior_to * cos_theta_i + ior_from * cos_theta_t);
-
-   return (ray_perp * ray_perp + ray_para * ray_para) / 2;
-}
-
 inline vec refract(vec const& normal, vec const& incident, double ior_ratio) noexcept
 {
    const double cos_theta = dot(normal, -incident);
@@ -58,6 +41,11 @@ inline double random_double(double min, double max)
    return min + (max - min) * random_double();
 }
 
+inline vec random_vec()
+{
+   return {random_double(), random_double(), random_double()};
+}
+
 inline vec random_unit_vector()
 {
    auto a = random_double(0, 2 * M_PI);
@@ -67,11 +55,24 @@ inline vec random_unit_vector()
    return vec(r * cos(a), r * sin(a), z);
 }
 
+inline vec random_in_unit_disk()
+{
+   while (true)
+   {
+      auto p = vec{random_double(-1, 1), random_double(-1, 1), 0};
+      if (p.length_squared() >= 1)
+      {
+         continue;
+      }
+      return p;
+   }
+}
+
 inline vec random_in_unit_sphere()
 {
    while (true)
    {
-      auto p = vec{random_double(), random_double(), random_double()};
+      auto p = vec{random_double(-1, 1), random_double(-1, 1), random_double(-1, 1)};
       if (p.length_squared() >= 1)
       {
          continue;
