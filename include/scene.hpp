@@ -18,8 +18,8 @@ class scene
 public:
    [[nodiscard]] image render(camera const& cam, render_settings const& settings);
 
-   void add_sphere(sphere const& sphere_in, material_info const& mat);
-   void add_sphere(sphere&& sphere_in, material_info&& mat);
+   void add_sphere(sphere const& sphere_in, std::unique_ptr<material> p_mat);
+   void add_sphere(sphere&& sphere_in, std::unique_ptr<material> p_mat);
 
 private:
    [[nodiscard]] colour radiance(ray const& r, size_t u_samples, size_t v_samples, size_t depth) const;
@@ -29,5 +29,5 @@ private:
 
 private:
    std::vector<sphere> spheres;
-   std::vector<material_info> sphere_mats;
+   std::vector<std::unique_ptr<material>> sphere_mats;
 };

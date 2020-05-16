@@ -45,4 +45,7 @@ target_sources(${PROJECT_NAME}
       source/image.cpp
       source/math/vec.cpp
       source/math/ortho_normal_basis.cpp
+      source/materials/diffuse.cpp
+      source/materials/metallic.cpp
+      source/materials/dielectric.cpp
 )

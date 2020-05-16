@@ -7,14 +7,19 @@
 #include <optional>
 #include <utility>
 
-struct material_info
+class material
 {
-   bool operator==(material_info const& rhs) const = default;
+public:
+   struct scatter_data
+   {
+      vec emission{};
+      vec diffuse{};
 
-   vec emission{};
-   vec diffuse{};
+      ray scattered_ray{};
+   };
 
-   double refraction_index{1.0};
-   double reflectivity{-1.0};
-   double reflection_angle{0.0};
+public:
+   virtual ~material() = default;
+
+   virtual scatter_data scatter(const ray& ray_in, const hit& hit_in, double u, double v) const = 0;
 };

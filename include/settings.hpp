@@ -8,6 +8,6 @@ struct render_settings
    int window_height{static_cast<int>(window_width / (16.0 / 9.0))};
    size_t u_samples{1};
    size_t v_samples{1};
-   size_t sample_count{32};
-   size_t bounce_depth{8};
+   size_t sample_count{1};
+   size_t bounce_depth{4};
 };

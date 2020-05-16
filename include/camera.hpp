@@ -1,17 +1,29 @@
 #pragma once
 
+#include "math/details.hpp"
+#include "math/vec.hpp"
 #include "ray.hpp"
+
+#include <cmath>
 
 class camera
 {
 public:
-   camera() : lower_left_corner(origin - horizontal / 2.0 - vertical / 2.0 - vec(0.0, 0.0, 1.0)) {}
+   camera() noexcept : origin(0.0, 0.0, 0.0)
+   {
+      lower_left_corner = vec{-2, -1, -1.0};
+      horizontal = vec{4.0, 0.0, 0.0};
+      vertical = vec{0.0, 2.0, 0.0};
+   }
 
-   ray shoot_ray(double u, double v) const { return ray(origin, lower_left_corner + u * horizontal + v * vertical); }
+   ray shoot_ray(double u, double v) const noexcept
+   {
+      return ray(origin, lower_left_corner + u * horizontal + v * vertical);
+   }
 
 private:
-   vec origin{0.0, 0.0, 0.0};
-   vec horizontal{4.0, 0.0, 0.0};
-   vec vertical{0.0, 2.25, 0.0};
+   vec origin;
+   vec horizontal;
+   vec vertical;
    vec lower_left_corner;
 };

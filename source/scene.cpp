@@ -11,6 +11,7 @@
 #include <cstddef>
 #include <future>
 #include <iostream>
+#include <memory>
 #include <optional>
 #include <random>
 #include <thread>
@@ -75,13 +76,13 @@ image scene::render(camera const& cam, render_settings const& settings)
    return final_img;
 }
 
-void scene::add_sphere(const sphere& sphere_in, material_info const& material)
+void scene::add_sphere(const sphere& sphere_in, std::unique_ptr<material> material)
 {
    spheres.push_back(sphere_in);
-   sphere_mats.push_back(material);
+   sphere_mats.push_back(std::move(material));
 }
 
-void scene::add_sphere(sphere&& sphere_in, material_info&& material)
+void scene::add_sphere(sphere&& sphere_in, std::unique_ptr<material> material)
 {
    spheres.push_back(std::move(sphere_in));
    sphere_mats.push_back(std::move(material));
@@ -97,18 +98,13 @@ colour scene::radiance(const ray& ray_in, size_t u_sample_count, size_t v_sample
    const auto hit_record = intersect(ray_in);
    if (!hit_record)
    {
-      vec unit_direction = to_unit_vector(ray_in.direction());
+      vec unit_direction = normalise(ray_in.direction());
       auto t = 0.5 * (unit_direction.y + 1.0);
       return (1.0 - t) * colour(1.0, 1.0, 1.0) + t * colour(0.5, 0.7, 1.0);
    }
 
    const auto& hit = hit_record->hit;
-   const auto& mat = hit_record->mat;
-
-   const auto [ior_from, ior_to] =
-      hit.front_face ? std::make_pair(1.0, mat.refraction_index) : std::make_pair(mat.refraction_index, 1.0);
-   const auto reflectivity =
-      mat.reflectivity < 0 ? reflectance(hit.normal, ray_in.direction(), ior_from, ior_to) : mat.reflectivity;
+   const auto& mat = hit_record->p_mat;
 
    colour result{};
 
@@ -119,19 +115,9 @@ colour scene::radiance(const ray& ray_in, size_t u_sample_count, size_t v_sample
          const double u = (u_sample + random_double()) / static_cast<double>(u_sample_count);
          const double v = (v_sample + random_double()) / static_cast<double>(v_sample_count);
 
-         if (random_double() < reflectivity)
-         {
-            const ray new_ray =
-               ray(hit.position, cone_sample(reflect(hit.normal, ray_in.direction()), mat.reflection_angle, u, v));
+         const auto [emission, diffuse, ray] = mat->scatter(ray_in, hit, u, v);
 
-            result += mat.emission + radiance(new_ray, u_sample_count, v_sample_count, depth - 1);
-         }
-         else
-         {
-            const ray new_ray = ray(hit.position, hemisphere_sample(ortho_normal_basis::from_z(hit.normal), u, v));
-
-            result += mat.emission + mat.diffuse * radiance(new_ray, u_sample_count, v_sample_count, depth - 1);
-         }
+         result += emission + diffuse * radiance(ray, u_sample_count, v_sample_count, depth - 1);
       }
    }
 
@@ -151,28 +137,28 @@ std::optional<hit_record> scene::sphere_intersect(ray const& ray_in, double near
    constexpr double epsilon = 0.001;
    for (size_t i = 0; i < spheres.size(); ++i)
    {
-      auto const oc = ray_in.origin() - spheres[i].center;
-      auto const a = ray_in.direction().length_squared();
-      auto const b = dot(oc, ray_in.direction());
-      auto const c = oc.length_squared() - spheres[i].radius * spheres[i].radius;
-      auto const discriminant = b * b - a * c;
+      const auto oc = ray_in.origin() - spheres[i].center;
+      const auto a = ray_in.direction().length_squared();
+      const auto b = dot(oc, ray_in.direction());
+      const auto c = oc.length_squared() - spheres[i].radius * spheres[i].radius;
+      const auto discriminant = b * b - a * c;
 
       if (discriminant > 0)
       {
-         auto const determinant = std::sqrt(discriminant);
-         auto const t_min = (-b - determinant) / a;
-         auto const t_max = (-b + determinant) / a;
+         const auto determinant = std::sqrt(discriminant);
+         const auto t_min = (-b - determinant) / a;
+         const auto t_max = (-b + determinant) / a;
 
-         if (t_min < epsilon && t_max < epsilon)
-         {
-            continue;
-         }
-
-         auto const t = t_min > epsilon ? t_min : t_max;
-         if (t < current_nearest)
+         if (t_min < current_nearest && t_min > epsilon)
          {
             nearest_index = i;
             current_nearest = t_min;
+         }
+
+         if (t_max < current_nearest && t_max > epsilon)
+         {
+            nearest_index = i;
+            current_nearest = t_max;
          }
       }
    }
@@ -180,9 +166,9 @@ std::optional<hit_record> scene::sphere_intersect(ray const& ray_in, double near
    if (!nearest_index)
       return {};
 
-   auto const hit_position = ray_in.position_along(current_nearest);
-   auto const normal = (hit_position - spheres[*nearest_index].center) / spheres[*nearest_index].radius;
-   bool const front_face = dot(normal, ray_in.direction()) < 0;
+   const auto hit_position = ray_in.position_along(current_nearest);
+   const auto normal = (hit_position - spheres[*nearest_index].center) / spheres[*nearest_index].radius;
+   const bool front_face = dot(normal, ray_in.direction()) < 0;
 
    // clang-format off
    return hit_record
@@ -194,7 +180,7 @@ std::optional<hit_record> scene::sphere_intersect(ray const& ray_in, double near
             .distance = current_nearest, 
             .front_face = front_face
          },
-         .mat = sphere_mats[*nearest_index]
+         .p_mat = sphere_mats[*nearest_index].get()
       };
    // clang-format on
 }

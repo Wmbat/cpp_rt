@@ -6,9 +6,9 @@
 #include <cmath>
 #include <random>
 
-constexpr vec reflect(vec const& v, vec const& n) noexcept
+constexpr vec reflect(const vec& normal, const vec& incident) noexcept
 {
-   return v - 2 * dot(v, n) * n;
+   return incident - 2 * dot(normal, incident) * normal;
 }
 
 inline double reflectance(const norm& normal, const norm& incident, double ior_from, double ior_to) noexcept
@@ -28,13 +28,13 @@ inline double reflectance(const norm& normal, const norm& incident, double ior_f
    return (ray_perp * ray_perp + ray_para * ray_para) / 2;
 }
 
-inline vec refract(vec const& uv, vec const& n, double etai_over_etat) noexcept
+inline vec refract(vec const& normal, vec const& incident, double ior_ratio) noexcept
 {
-   auto const cos_theta = dot(-uv, n);
-   vec const ray_out_parallel = etai_over_etat * (uv + cos_theta * n);
-   vec const ray_out_perp = -sqrt(1.0 - ray_out_parallel.length_squared()) * n;
+   const double cos_theta = dot(normal, -incident);
+   const vec parallel = ior_ratio * (incident + cos_theta * normal);
+   const vec perpendicular = -std::sqrt(1.0 - parallel.length_squared()) * normal;
 
-   return ray_out_parallel + ray_out_perp;
+   return parallel + perpendicular;
 }
 
 inline double schlick(double cos, double refractive_index)
@@ -82,7 +82,7 @@ inline vec random_in_unit_sphere()
 
 inline double to_radians(double angle) noexcept
 {
-   return angle / (360 * 2 * M_PI);
+   return angle * M_PI / 180;
 }
 
 inline vec cone_sample(const norm& direction, double cone_theta, double u, double v)

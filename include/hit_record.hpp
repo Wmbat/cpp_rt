@@ -8,5 +8,5 @@
 struct hit_record
 {
    hit hit;
-   material_info mat;
+   material* p_mat;
 };

@@ -88,11 +88,6 @@ constexpr vec normalise(vec const& vec) noexcept
    return vec / vec.length();
 }
 
-inline vec to_unit_vector(vec const& vec) noexcept
-{
-   return vec / vec.length();
-}
-
 using colour = vec;
 using norm = vec;
 using position = vec;
