@@ -52,6 +52,7 @@ target_sources(${PROJECT_NAME}
       source/math/ortho_normal_basis.cpp
       source/math/vec.cpp
 
+      source/camera.cpp
       source/main.cpp
       source/ray.cpp
       source/scene.cpp

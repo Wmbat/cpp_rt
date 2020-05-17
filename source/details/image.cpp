@@ -8,7 +8,7 @@ image::image(int width, int height) : w(width), h(height)
    data.resize(w * h);
 }
 
-void image::add_samples(int x, int y, pixel pxl) noexcept
+void image::add_samples(int x, int y, const pixel& pxl)
 {
    assert(x >= 0 && x < w);
    assert(y >= 0 && y < h);
@@ -16,7 +16,7 @@ void image::add_samples(int x, int y, pixel pxl) noexcept
    data[x + y * width()].add_sample(pxl);
 }
 
-void image::add_samples(int x, int y, vec const& colour, size_t sample_count) noexcept
+void image::add_samples(int x, int y, const vec& colour, size_t sample_count)
 {
    assert(x >= 0 && x < w);
    assert(y >= 0);
@@ -25,7 +25,7 @@ void image::add_samples(int x, int y, vec const& colour, size_t sample_count) no
    data[x + y * width()].add_sample(colour, sample_count);
 }
 
-image& image::operator+=(image const& rhs)
+image& image::operator+=(const image& rhs)
 {
    assert(data.size() == rhs.data.size());
 
@@ -45,9 +45,9 @@ void image::write() const
    for (size_t i = 0; i < data.size(); ++i)
    {
       auto const colour = data[i].compute_colour();
-      out << static_cast<int>(256 * std::clamp(colour.x, 0.0, 0.999)) << ' '
-          << static_cast<int>(256 * std::clamp(colour.y, 0.0, 0.999)) << ' '
-          << static_cast<int>(256 * std::clamp(colour.z, 0.0, 0.999)) << '\n';
+      out << static_cast<int>(256 * std::clamp(colour.x(), 0.0, 0.999)) << ' '
+          << static_cast<int>(256 * std::clamp(colour.y(), 0.0, 0.999)) << ' '
+          << static_cast<int>(256 * std::clamp(colour.z(), 0.0, 0.999)) << '\n';
    }
 
    out << std::endl;

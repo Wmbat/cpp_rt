@@ -6,10 +6,10 @@ class ray
 {
 public:
    ray() = default;
-   ray(vec const& origin, vec const& direction) noexcept;
+   ray(const vec& origin, const vec& direction) noexcept;
 
-   vec const& origin() const noexcept;
-   vec const& direction() const noexcept;
+   const vec& origin() const noexcept;
+   const vec& direction() const noexcept;
 
    [[nodiscard]] vec position_along(double t) const noexcept;
 

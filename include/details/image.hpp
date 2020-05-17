@@ -10,10 +10,10 @@ public:
    image() = default;
    image(int width, int height);
 
-   void add_samples(int x, int y, pixel pxl);
-   void add_samples(int x, int y, vec const& colour, size_t sample_count);
+   void add_samples(int x, int y, const pixel& pxl);
+   void add_samples(int x, int y, const vec& colour, size_t sample_count);
 
-   image& operator+=(image const& rhs);
+   image& operator+=(const image& rhs);
 
    constexpr int width() const noexcept { return w; }
    constexpr int height() const noexcept { return h; }
