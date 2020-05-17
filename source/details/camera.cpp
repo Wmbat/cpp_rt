@@ -1,4 +1,4 @@
-#include "camera.hpp"
+#include "details/camera.hpp"
 
 camera::camera(const create_info& info) noexcept : origin(info.eye), lens_radius(info.aperture / 2)
 {

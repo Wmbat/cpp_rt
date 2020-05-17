@@ -34,7 +34,8 @@ image scene::render(camera const& cam, render_settings const& settings)
                auto const ray = cam.shoot_ray(u, v);
 
                int const new_y = std::abs(y - (settings.window_height - 1));
-               auto rad = radiance(ray, settings.u_samples, settings.v_samples, settings.bounce_depth);
+               auto rad =
+                  radiance(ray, settings.u_samples, settings.v_samples, settings.bounce_depth);
                img.add_samples(x, new_y, rad, 1);
             }
          };
@@ -91,7 +92,13 @@ void scene::add_sphere(sphere&& sphere_in, std::unique_ptr<material> material)
    sphere_mats.push_back(std::move(material));
 }
 
-colour scene::radiance(const ray& ray_in, size_t u_sample_count, size_t v_sample_count, size_t depth) const
+void scene::set_environment_colour(const colour& environment_in) noexcept
+{
+   environment = environment_in;
+}
+
+colour scene::radiance(
+   const ray& ray_in, size_t u_sample_count, size_t v_sample_count, size_t depth) const
 {
    if (depth <= 0)
    {
@@ -101,9 +108,7 @@ colour scene::radiance(const ray& ray_in, size_t u_sample_count, size_t v_sample
    const auto hit_record = intersect(ray_in);
    if (!hit_record)
    {
-      vec unit_direction = normalise(ray_in.direction());
-      auto t = 0.5 * (unit_direction.y + 1.0);
-      return (1.0 - t) * colour(1.0, 1.0, 1.0) + t * colour(0.5, 0.7, 1.0);
+      return environment;
    }
 
    const auto& hit = hit_record->hit;
@@ -170,7 +175,8 @@ std::optional<hit_record> scene::sphere_intersect(ray const& ray_in, double near
       return {};
 
    const auto hit_position = ray_in.position_along(current_nearest);
-   const auto normal = (hit_position - spheres[*nearest_index].center) / spheres[*nearest_index].radius;
+   const auto normal =
+      (hit_position - spheres[*nearest_index].center) / spheres[*nearest_index].radius;
    const bool front_face = dot(normal, ray_in.direction()) < 0;
 
    // clang-format off

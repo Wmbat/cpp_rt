@@ -1,6 +1,7 @@
 #include "details/settings.hpp"
 #include "materials/dielectric.hpp"
 #include "materials/diffuse.hpp"
+#include "materials/diffuse_light.hpp"
 #include "materials/metallic.hpp"
 #include "math/details.hpp"
 #include "scene.hpp"
@@ -8,10 +9,19 @@
 #include <iostream>
 #include <memory>
 
+void random_sphere_scene(const render_settings& settings);
+
 int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 {
    render_settings settings{};
 
+   random_sphere_scene(settings);
+
+   return 0;
+}
+
+void random_sphere_scene(const render_settings& settings)
+{
    vec eye{13, 2, 3.0};
    vec look_at{0.0, 0.0, 0.0};
 
@@ -29,7 +39,10 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
    // clang-format on
 
    camera cam{info};
+
    scene scene{};
+
+   scene.set_environment_colour({135 / 256.0, 206 / 256.0, 235 / 256.0});
 
    for (int a = -11; a < 11; ++a)
    {
@@ -47,7 +60,8 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
             else if (random_value < 0.9)
             {
                scene.add_sphere(sphere{.center = center, .radius = 0.2},
-                  std::make_unique<metallic>(colour{}, random_vec() * random_vec(), random_double(0.0, 0.5)));
+                  std::make_unique<metallic>(
+                     colour{}, random_vec() * random_vec(), random_double(0.0, 0.5)));
             }
             else
             {
@@ -59,6 +73,11 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
    }
 
    // clang-format off
+   scene.add_sphere(
+         sphere{ .center{ -1000.0, 1000.0, 100.0 }, .radius = 100 },
+         std::make_unique<diffuse_light>(colour{ 20.0, 20.0, 20.0 })
+   );
+
    scene.add_sphere(
          sphere{ .center = {0.0, -1000.0, 0.0}, .radius = 1000 },
          std::make_unique<diffuse>(colour{}, colour{0.5, 0.5, 0.5})
@@ -81,6 +100,4 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
    auto const img = scene.render(cam, settings);
 
    img.write();
-
-   return 0;
 }

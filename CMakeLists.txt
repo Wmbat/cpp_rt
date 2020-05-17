@@ -40,20 +40,23 @@ target_include_directories(${PROJECT_NAME}
 )
 
 target_sources(${PROJECT_NAME}
-   PRIVATE 
-      source/details/image.cpp
-      source/details/pixel.cpp
-      source/details/progress_keeper.cpp
+    PRIVATE 
+        source/details/camera.cpp
+        source/details/image.cpp
+        source/details/pixel.cpp
+        source/details/progress_keeper.cpp
 
-      source/materials/dielectric.cpp
-      source/materials/diffuse.cpp
-      source/materials/metallic.cpp
+        source/materials/dielectric.cpp
+        source/materials/diffuse.cpp
+        source/materials/diffuse_light.cpp
+        source/materials/metallic.cpp
 
-      source/math/ortho_normal_basis.cpp
-      source/math/vec.cpp
+        source/math/ortho_normal_basis.cpp
+        source/math/vec.cpp
+    
+        source/renderables/triangle.cpp
 
-      source/camera.cpp
-      source/main.cpp
-      source/ray.cpp
-      source/scene.cpp
+        source/main.cpp
+        source/ray.cpp
+        source/scene.cpp
 )
