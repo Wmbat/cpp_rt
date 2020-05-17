@@ -9,13 +9,15 @@ message(STATUS "[${PROJECT_NAME}] Compiling with ${CMAKE_CXX_COMPILER_ID}")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL "" FORCE)
 
+find_package(SDL2 REQUIRED)
+
 add_executable(${PROJECT_NAME})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_EXTENSIONS OFF)
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE -pthread)
+target_link_libraries(${PROJECT_NAME} PRIVATE SDL2 SDL2_image -pthread)
 
 target_compile_options(${PROJECT_NAME}
    PRIVATE
@@ -34,18 +36,23 @@ target_include_directories(${PROJECT_NAME}
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
    PRIVATE
       ${CMAKE_CURRENT_SOURCE_DIR}/source
+      ${SDL2_INCLUDE_DIRS}
 )
 
 target_sources(${PROJECT_NAME}
    PRIVATE 
-      source/main.cpp
-      source/pixel.cpp
-      source/ray.cpp
-      source/scene.cpp
-      source/image.cpp
-      source/math/vec.cpp
-      source/math/ortho_normal_basis.cpp
+      source/details/image.cpp
+      source/details/pixel.cpp
+      source/details/progress_keeper.cpp
+
+      source/materials/dielectric.cpp
       source/materials/diffuse.cpp
       source/materials/metallic.cpp
-      source/materials/dielectric.cpp
+
+      source/math/ortho_normal_basis.cpp
+      source/math/vec.cpp
+
+      source/main.cpp
+      source/ray.cpp
+      source/scene.cpp
 )

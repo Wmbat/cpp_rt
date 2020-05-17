@@ -41,7 +41,7 @@ public:
       vertical = 2 * half_height * info.focus_distance * axis.y();
    }
 
-   ray shoot_ray(double u, double v) const noexcept
+   [[nodiscard]] ray shoot_ray(double u, double v) const noexcept
    {
       const vec random_disk = lens_radius * random_in_unit_disk();
       const vec offset = axis.x() * random_disk.x + axis.y() * random_disk.y;
@@ -50,7 +50,7 @@ public:
    }
 
 private:
-   vec origin;
+   const vec origin;
    vec horizontal;
    vec vertical;
    vec lower_left_corner;

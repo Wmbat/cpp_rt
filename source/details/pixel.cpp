@@ -1,4 +1,4 @@
-#include "pixel.hpp"
+#include "details/pixel.hpp"
 
 void pixel::add_sample(pixel const& pixel) noexcept
 {

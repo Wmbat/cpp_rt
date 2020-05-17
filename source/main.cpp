@@ -1,9 +1,12 @@
+#include "details/settings.hpp"
 #include "materials/dielectric.hpp"
 #include "materials/diffuse.hpp"
 #include "materials/metallic.hpp"
 #include "math/details.hpp"
 #include "scene.hpp"
-#include "settings.hpp"
+
+#include <iostream>
+#include <memory>
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 {

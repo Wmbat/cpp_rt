@@ -1,9 +1,10 @@
 #include "scene.hpp"
+#include "details/image.hpp"
+#include "details/pixel.hpp"
+#include "details/progress_keeper.hpp"
 #include "hit_record.hpp"
-#include "image.hpp"
 #include "math/details.hpp"
 #include "math/vec.hpp"
-#include "pixel.hpp"
 #include "ray.hpp"
 
 #include <algorithm>
@@ -48,6 +49,7 @@ image scene::render(camera const& cam, render_settings const& settings)
    futures.reserve(settings.sample_count);
 
    size_t num_done = 0;
+   progress_keeper progress_keeper{settings.sample_count};
    do
    {
       auto const num_left = settings.sample_count - curr_samples;
@@ -64,6 +66,7 @@ image scene::render(camera const& cam, render_settings const& settings)
       if (finished_img != futures.end())
       {
          ++num_done;
+         progress_keeper.update(num_done);
          final_img += finished_img->get();
          futures.erase(finished_img);
       }

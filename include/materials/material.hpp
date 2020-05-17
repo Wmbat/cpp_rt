@@ -21,5 +21,5 @@ public:
 public:
    virtual ~material() = default;
 
-   virtual scatter_data scatter(const ray& ray_in, const hit& hit_in, double u, double v) const = 0;
+   [[nodiscard]] virtual scatter_data scatter(const ray& ray_in, const hit& hit_in, double u, double v) const = 0;
 };

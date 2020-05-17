@@ -1,11 +1,11 @@
 #pragma once
 
 #include "camera.hpp"
+#include "details/image.hpp"
+#include "details/settings.hpp"
 #include "hit_record.hpp"
-#include "image.hpp"
 #include "materials/material.hpp"
 #include "ray.hpp"
-#include "settings.hpp"
 #include "sphere.hpp"
 
 #include <memory>

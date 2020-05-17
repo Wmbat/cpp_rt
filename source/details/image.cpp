@@ -1,7 +1,7 @@
-#include "image.hpp"
+#include "details/image.hpp"
 
 #include <cassert>
-#include <iostream>
+#include <fstream>
 
 image::image(int width, int height) : w(width), h(height)
 {
@@ -39,11 +39,17 @@ image& image::operator+=(image const& rhs)
 
 void image::write() const
 {
-   std::cout << "P3\n" << width() << " " << height() << "\n255\n";
+   std::ofstream out("image.ppm");
+
+   out << "P3\n" << width() << " " << height() << "\n255\n";
    for (size_t i = 0; i < data.size(); ++i)
    {
       auto const colour = data[i].compute_colour();
-      std::cout << static_cast<int>(255.99 * colour.x) << ' ' << static_cast<int>(255.99 * colour.y) << ' '
-                << static_cast<int>(255.99 * colour.z) << '\n';
+      out << static_cast<int>(256 * std::clamp(colour.x, 0.0, 0.999)) << ' '
+          << static_cast<int>(256 * std::clamp(colour.y, 0.0, 0.999)) << ' '
+          << static_cast<int>(256 * std::clamp(colour.z, 0.0, 0.999)) << '\n';
    }
+
+   out << std::endl;
+   out.close();
 }
