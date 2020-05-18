@@ -24,5 +24,5 @@ private:
    int w;
    int h;
 
-   std::vector<pixel> data;
+   std::vector<pixel> pixels;
 };

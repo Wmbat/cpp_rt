@@ -78,11 +78,11 @@ public:
 
    constexpr bool operator==(vec const& rhs) const noexcept = default;
 
-   friend vec operator*(double lhs, vec const& rhs)
+   constexpr friend vec operator*(double lhs, vec const& rhs)
    {
       return vec(lhs * rhs.x(), lhs * rhs.y(), lhs * rhs.z());
    }
-   friend vec operator/(double lhs, vec const& rhs)
+   constexpr friend vec operator/(double lhs, vec const& rhs)
    {
       return vec(lhs / rhs.x(), lhs / rhs.y(), lhs / rhs.z());
    }
@@ -110,7 +110,7 @@ constexpr vec cross(vec const& lhs, vec const& rhs) noexcept
 
    return vec(x, y, z);
 }
-constexpr vec normalise(vec const& vec) noexcept
+inline vec normalise(vec const& vec) noexcept
 {
    return vec / vec.length();
 }

@@ -7,7 +7,6 @@
 #include "math/vec.hpp"
 #include "ray.hpp"
 
-#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <future>
@@ -15,6 +14,7 @@
 #include <memory>
 #include <optional>
 #include <random>
+#include <ranges>
 #include <thread>
 
 image scene::render(const camera& cam, const render_settings& settings)
@@ -27,7 +27,7 @@ image scene::render(const camera& cam, const render_settings& settings)
          image img{settings.window_width, settings.window_height};
          for (int y = settings.window_height - 1; y >= 0; --y)
          {
-            for (int x = 0; x < settings.window_width; ++x)
+            for (int x : std::views::iota(0, settings.window_width))
             {
                auto const u = (x + random_double()) / (settings.window_width - 1);
                auto const v = (y + random_double()) / (settings.window_height - 1);
@@ -130,7 +130,7 @@ colour scene::radiance(
       return environment;
    }
 
-   const auto& hit = hit_record->hit;
+   const auto& hit = hit_record->hit_data;
    const auto& mat = hit_record->p_mat;
 
    colour result{};
@@ -157,7 +157,7 @@ std::optional<hit_record> scene::intersect(const ray& ray_in) const
 
    const auto sphere_record = sphere_intersect(ray_in, limit);
    const auto triangle_record =
-      triangle_intersect(ray_in, sphere_record ? sphere_record->hit.distance : limit);
+      triangle_intersect(ray_in, sphere_record ? sphere_record->hit_data.distance : limit);
 
    return triangle_record ? triangle_record : sphere_record;
 }
@@ -219,7 +219,7 @@ std::optional<hit_record> scene::triangle_intersect(const ray& ray_in, double ne
    // clang-format off
    return hit_record
       {
-         .hit = 
+         .hit_data = 
          {
             .position = ray_in.position_along(current_nearest), 
             .normal = front_face ? tri.normal() : -tri.normal(), 
@@ -278,7 +278,7 @@ std::optional<hit_record> scene::sphere_intersect(const ray& ray_in, double near
    // clang-format off
    return hit_record
       {
-         .hit = 
+         .hit_data = 
          {
             .position = hit_position, 
             .normal = front_face ? normal : -normal, 

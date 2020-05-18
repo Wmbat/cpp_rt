@@ -7,6 +7,6 @@
 
 struct hit_record
 {
-   hit hit;
+   hit hit_data;
    material* p_mat;
 };

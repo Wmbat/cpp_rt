@@ -10,6 +10,7 @@
 
 #include <iostream>
 #include <memory>
+#include <ranges>
 
 void random_sphere_scene(const render_settings& settings);
 void cornell_box_scene(const render_settings& settings);
@@ -18,8 +19,11 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 {
    render_settings settings{};
 
-   random_sphere_scene(settings);
-   // cornell_box_scene(settings);
+   // random_sphere_scene(settings);
+
+   settings.window_width = 556;
+   settings.window_height = 556;
+   cornell_box_scene(settings);
 
    return 0;
 }
@@ -108,8 +112,8 @@ void random_sphere_scene(const render_settings& settings)
 
 void cornell_box_scene(const render_settings& settings)
 {
-   vec eye{0, 2, 3};
-   vec look_at{0, 0, 0};
+   vec eye{278, 278, -800};
+   vec look_at{278, 278, 0};
 
    // clang-format off
    camera::create_info info
@@ -117,7 +121,7 @@ void cornell_box_scene(const render_settings& settings)
       .eye = eye,
       .look_at = look_at,
       .up = {0.0, 1.0, 0.0},
-      .vertical_fov = 90,
+      .vertical_fov = 40,
       .aspect_ratio = (double)settings.window_width / settings.window_height,
       .aperture = 0.0,
       .focus_distance = 10
@@ -127,27 +131,51 @@ void cornell_box_scene(const render_settings& settings)
    camera cam{info};
 
    scene scene{};
-   scene.set_environment_colour({});
-
-   // clang-format off
-   scene.add_sphere(
-         sphere{ .center{ -250.0, 250.0, 0.0 }, .radius = 100 },
-         std::make_unique<diffuse_light>(colour{ 10.0, 10.0, 10.0 })
-   );
-
-   scene.add_sphere(
-         sphere{ .center = {0.0, -1000.0, 0.0}, .radius = 1000 },
-         std::make_unique<diffuse>(colour{}, colour{0.1, 0.3, 0.6})
-   );
-
-   scene.add_sphere(
-         sphere { .center = {0.0, 0.5, 0.0}, .radius = 0.5 },
-         std::make_unique<diffuse>(colour{}, colour{0.6, 0.3, 0.1})
-   );
+   // scene.set_environment_colour({135 / 256.0, 206 / 256.0, 235 / 256.0});
 
    // clang-format on
-   scene.add_triangle(vec(0.5, 0.5, 1), vec(0.5, 0.5, 0), vec(1.5, 0.5, 1),
-      std::make_unique<diffuse>(colour{}, colour{.3, .6, .1}));
+
+   // back rectangle
+   scene.add_triangle(vec(0, 0, 555), vec(0, 555, 555), vec(555, 0, 555),
+      std::make_unique<diffuse>(colour{}, colour{.73, .73, .73}));
+
+   scene.add_triangle(vec(555, 555, 555), vec(555, 0, 555), vec(0, 555, 555),
+      std::make_unique<diffuse>(colour{}, colour{.73, .73, .73}));
+
+   // bottom rectangle
+   scene.add_triangle(vec(0, 0, 555), vec(0, 0, 0), vec(555, 0, 555),
+      std::make_unique<diffuse>(colour{}, colour{.73, .73, .73}));
+
+   scene.add_triangle(vec(555, 0, 0), vec(555, 0, 555), vec(0, 0, 0),
+      std::make_unique<diffuse>(colour{}, colour{.73, .73, .73}));
+
+   // top rectangle
+   scene.add_triangle(vec(0, 555, 555), vec(555, 555, 555), vec(0, 555, 0),
+      std::make_unique<diffuse>(colour{}, colour{.73, .73, .73}));
+
+   scene.add_triangle(vec(555, 555, 0), vec(555, 555, 555), vec(0, 555, 0),
+      std::make_unique<diffuse>(colour{}, colour{.73, .73, .73}));
+
+   // left rectangle
+   scene.add_triangle(vec(0, 0, 0), vec(0, 555, 0), vec(0, 0, 555),
+      std::make_unique<diffuse>(colour{}, colour{.12, .45, .15}));
+
+   scene.add_triangle(vec(0, 555, 555), vec(0, 555, 0), vec(0, 0, 555),
+      std::make_unique<diffuse>(colour{}, colour{.12, .45, .15}));
+
+   // right rectangle
+   scene.add_triangle(vec(555, 0, 0), vec(555, 555, 0), vec(555, 0, 555),
+      std::make_unique<diffuse>(colour{}, colour{.65, .05, .05}));
+
+   scene.add_triangle(vec(555, 555, 555), vec(555, 555, 0), vec(555, 0, 555),
+      std::make_unique<diffuse>(colour{}, colour{.65, .05, .05}));
+
+   // light rectangle
+   scene.add_triangle(vec(213, 554, 332), vec(343, 554, 332), vec(213, 555, 227),
+      std::make_unique<diffuse_light>(colour{25, 25, 25}));
+
+   scene.add_triangle(vec(343, 554, 227), vec(343, 554, 332), vec(213, 554, 227),
+      std::make_unique<diffuse_light>(colour{25, 25, 25}));
 
    auto const img = scene.render(cam, settings);
    img.write();
