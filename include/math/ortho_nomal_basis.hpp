@@ -12,7 +12,10 @@ public:
    constexpr const norm& y() const noexcept { return data[1]; }
    constexpr const norm& z() const noexcept { return data[2]; }
 
-   constexpr vec transform(const vec& pos) const noexcept { return x() * pos.x() + y() * pos.y() + z() * pos.z(); }
+   constexpr vec transform(const vec& pos) const noexcept
+   {
+      return x() * pos.x() + y() * pos.y() + z() * pos.z();
+   }
 
    static ortho_normal_basis from_xy(const norm& x_in, const norm& y_in);
    static ortho_normal_basis from_yx(const norm& y_in, const norm& x_in);
@@ -23,5 +26,5 @@ public:
    static ortho_normal_basis from_z(const norm& z_in);
 
 private:
-   norm data[3];
+   norm data[3] = {norm(0.0, 0.0, 0.0), norm(0.0, 0.0, 0.0), norm(0.0, 0.0, 0.0)};
 };

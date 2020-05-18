@@ -3,6 +3,7 @@
 /build_release
 /compile_commands.json
 .clangd
+.gdb_history
 tags
 
 html

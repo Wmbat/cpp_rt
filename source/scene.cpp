@@ -17,7 +17,7 @@
 #include <random>
 #include <thread>
 
-image scene::render(camera const& cam, render_settings const& settings)
+image scene::render(const camera& cam, const render_settings& settings)
 {
    size_t curr_samples = 0;
    auto launch = [&] {
@@ -92,6 +92,25 @@ void scene::add_sphere(sphere&& sphere_in, std::unique_ptr<material> material)
    sphere_mats.push_back(std::move(material));
 }
 
+void scene::add_triangle(const triangle& triangle_in, std::unique_ptr<material> material)
+{
+   triangles.push_back(triangle_in);
+   triangle_mats.push_back(std::move(material));
+}
+
+void scene::add_triangle(triangle&& triangle_in, std::unique_ptr<material> material)
+{
+   triangles.push_back(std::move(triangle_in));
+   triangle_mats.push_back(std::move(material));
+}
+
+void scene::add_triangle(
+   const vec& v0, const vec& v1, const vec& v2, std::unique_ptr<material> material)
+{
+   triangles.emplace_back(v0, v1, v2);
+   triangle_mats.push_back(std::move(material));
+}
+
 void scene::set_environment_colour(const colour& environment_in) noexcept
 {
    environment = environment_in;
@@ -132,12 +151,87 @@ colour scene::radiance(
    return result / (u_sample_count * v_sample_count);
 }
 
-std::optional<hit_record> scene::intersect(ray const& ray_in) const
+std::optional<hit_record> scene::intersect(const ray& ray_in) const
 {
-   return sphere_intersect(ray_in, std::numeric_limits<double>::max());
+   constexpr double limit = std::numeric_limits<double>::infinity();
+
+   const auto sphere_record = sphere_intersect(ray_in, limit);
+   const auto triangle_record =
+      triangle_intersect(ray_in, sphere_record ? sphere_record->hit.distance : limit);
+
+   return triangle_record ? triangle_record : sphere_record;
 }
 
-std::optional<hit_record> scene::sphere_intersect(ray const& ray_in, double nearer_than) const
+std::optional<hit_record> scene::triangle_intersect(const ray& ray_in, double nearer_than) const
+{
+   double current_nearest = nearer_than;
+
+   struct nearest
+   {
+      size_t index;
+      double det;
+      double u;
+      double v;
+   };
+
+   std::optional<nearest> nearest;
+
+   constexpr double epsilon = 0.001;
+   for (size_t i = 0; i < triangles.size(); ++i)
+   {
+      const triangle& tri = triangles[i];
+      const vec p_vec = cross(ray_in.direction(), tri.v());
+      const double determinant = dot(tri.u(), p_vec);
+
+      if (std::fabs(determinant) < epsilon)
+      {
+         continue;
+      }
+
+      const double inverse_determinant = 1.0 / determinant;
+      const vec t_vec = ray_in.origin() - tri.vertex<0>();
+      const vec q_vec = cross(t_vec, tri.u());
+
+      const double u = dot(t_vec, p_vec) * inverse_determinant;
+      const double v = dot(ray_in.direction(), q_vec) * inverse_determinant;
+
+      if ((u < 0.0) | (u > 1.0) | (v < 0.0) | (u + v > 1))
+      {
+         continue;
+      }
+
+      const double t = dot(tri.v(), q_vec) * inverse_determinant;
+      if (t > epsilon && t < current_nearest)
+      {
+         current_nearest = t;
+         nearest = {.index = i, .det = determinant, .u = u, .v = v};
+      }
+   }
+
+   if (!nearest)
+   {
+      return {};
+   }
+
+   const triangle& tri = triangles[nearest->index];
+   const bool front_face = nearest->det > epsilon;
+
+   // clang-format off
+   return hit_record
+      {
+         .hit = 
+         {
+            .position = ray_in.position_along(current_nearest), 
+            .normal = front_face ? tri.normal() : -tri.normal(), 
+            .distance = current_nearest, 
+            .front_face = front_face
+         },
+         .p_mat = triangle_mats[nearest->index].get()
+      };
+   // clang-format on
+}
+
+std::optional<hit_record> scene::sphere_intersect(const ray& ray_in, double nearer_than) const
 {
    double current_nearest = nearer_than;
    std::optional<size_t> nearest_index;
@@ -172,7 +266,9 @@ std::optional<hit_record> scene::sphere_intersect(ray const& ray_in, double near
    }
 
    if (!nearest_index)
+   {
       return {};
+   }
 
    const auto hit_position = ray_in.position_along(current_nearest);
    const auto normal =

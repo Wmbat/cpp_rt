@@ -4,18 +4,22 @@
 #include "materials/diffuse_light.hpp"
 #include "materials/metallic.hpp"
 #include "math/details.hpp"
+#include "math/vec.hpp"
+#include "renderables/triangle.hpp"
 #include "scene.hpp"
 
 #include <iostream>
 #include <memory>
 
 void random_sphere_scene(const render_settings& settings);
+void cornell_box_scene(const render_settings& settings);
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 {
    render_settings settings{};
 
    random_sphere_scene(settings);
+   // cornell_box_scene(settings);
 
    return 0;
 }
@@ -101,3 +105,50 @@ void random_sphere_scene(const render_settings& settings)
 
    img.write();
 }
+
+void cornell_box_scene(const render_settings& settings)
+{
+   vec eye{0, 2, 3};
+   vec look_at{0, 0, 0};
+
+   // clang-format off
+   camera::create_info info
+   {
+      .eye = eye,
+      .look_at = look_at,
+      .up = {0.0, 1.0, 0.0},
+      .vertical_fov = 90,
+      .aspect_ratio = (double)settings.window_width / settings.window_height,
+      .aperture = 0.0,
+      .focus_distance = 10
+   };
+   // clang-format on
+
+   camera cam{info};
+
+   scene scene{};
+   scene.set_environment_colour({});
+
+   // clang-format off
+   scene.add_sphere(
+         sphere{ .center{ -250.0, 250.0, 0.0 }, .radius = 100 },
+         std::make_unique<diffuse_light>(colour{ 10.0, 10.0, 10.0 })
+   );
+
+   scene.add_sphere(
+         sphere{ .center = {0.0, -1000.0, 0.0}, .radius = 1000 },
+         std::make_unique<diffuse>(colour{}, colour{0.1, 0.3, 0.6})
+   );
+
+   scene.add_sphere(
+         sphere { .center = {0.0, 0.5, 0.0}, .radius = 0.5 },
+         std::make_unique<diffuse>(colour{}, colour{0.6, 0.3, 0.1})
+   );
+
+   // clang-format on
+   scene.add_triangle(vec(0.5, 0.5, 1), vec(0.5, 0.5, 0), vec(1.5, 0.5, 1),
+      std::make_unique<diffuse>(colour{}, colour{.3, .6, .1}));
+
+   auto const img = scene.render(cam, settings);
+   img.write();
+};

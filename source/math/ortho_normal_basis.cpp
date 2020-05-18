@@ -60,14 +60,9 @@ ortho_normal_basis ortho_normal_basis::from_zy(const norm &z_in, const norm &y_i
 
 ortho_normal_basis ortho_normal_basis::from_z(const norm &z_in)
 {
-   // clang-format off
-   const norm x = normalise(
-      cross(
-         std::fabs(dot(z_in, norm(1.0, 0.0, 0.0))) > 0.999 ? 
-            norm(0.0, 1.0, 0.0) : 
-            norm(1.0, 0.0, 0.0), 
-         z_in));
-   // clang-format on
+   const norm x = normalise(cross(
+      std::fabs(dot(z_in, norm(1.0, 0.0, 0.0))) > 0.999 ? norm(0.0, 1.0, 0.0) : norm(1.0, 0.0, 0.0),
+      z_in));
    const norm y = normalise(cross(z_in, x));
 
    return ortho_normal_basis{x, y, z_in};
