@@ -10,7 +10,6 @@
 
 #include <iostream>
 #include <memory>
-#include <ranges>
 
 void random_sphere_scene(const render_settings& settings);
 void cornell_box_scene(const render_settings& settings);

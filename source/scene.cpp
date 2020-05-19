@@ -17,6 +17,9 @@
 #include <ranges>
 #include <thread>
 
+using std::views::iota;
+using std::views::reverse;
+
 image scene::render(const camera& cam, const render_settings& settings)
 {
    size_t curr_samples = 0;
@@ -25,9 +28,10 @@ image scene::render(const camera& cam, const render_settings& settings)
          ++curr_samples;
 
          image img{settings.window_width, settings.window_height};
+
          for (int y = settings.window_height - 1; y >= 0; --y)
          {
-            for (int x : std::views::iota(0, settings.window_width))
+            for (int x : iota(0, settings.window_width))
             {
                auto const u = (x + random_double()) / (settings.window_width - 1);
                auto const v = (y + random_double()) / (settings.window_height - 1);
@@ -133,8 +137,23 @@ colour scene::radiance(
    const auto& hit = hit_record->hit_data;
    const auto& mat = hit_record->p_mat;
 
-   colour result{};
+   using std::views::iota;
 
+   colour result{};
+   for (size_t u_sample : iota(0u, u_sample_count))
+   {
+      for (size_t v_sample : iota(0u, v_sample_count))
+      {
+         const double u = (u_sample + random_double()) / u_sample_count;
+         const double v = (v_sample + random_double()) / v_sample_count;
+
+         const auto [emission, diffuse, ray] = mat->scatter(ray_in, hit, u, v);
+
+         result += emission + diffuse * radiance(ray, u_sample_count, v_sample_count, depth - 1);
+      }
+   }
+
+   /*
    for (size_t u_sample = 0; u_sample < u_sample_count; ++u_sample)
    {
       for (size_t v_sample = 0; v_sample < v_sample_count; ++v_sample)
@@ -147,6 +166,7 @@ colour scene::radiance(
          result += emission + diffuse * radiance(ray, u_sample_count, v_sample_count, depth - 1);
       }
    }
+   */
 
    return result / (u_sample_count * v_sample_count);
 }
