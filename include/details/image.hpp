@@ -13,16 +13,16 @@ public:
    void add_samples(int x, int y, const pixel& pxl);
    void add_samples(int x, int y, const vec& colour, size_t sample_count);
 
-   image& operator+=(const image& rhs);
+   auto operator+=(const image& rhs) -> image&;
 
-   constexpr int width() const noexcept { return w; }
-   constexpr int height() const noexcept { return h; }
+   [[nodiscard]] constexpr auto width() const noexcept -> int { return m_width; }
+   [[nodiscard]] constexpr auto height() const noexcept -> int { return m_height; }
 
    void write() const;
 
 private:
-   int w;
-   int h;
+   int m_width{0};
+   int m_height{0};
 
-   std::vector<pixel> pixels;
+   std::vector<pixel> m_pixels;
 };

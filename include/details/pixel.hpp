@@ -11,14 +11,14 @@ public:
    void add_sample(pixel const& pixel) noexcept;
    void add_sample(vec const& colour, std::size_t num) noexcept;
 
-   [[nodiscard]] vec compute_colour() const noexcept;
+   [[nodiscard]] auto compute_colour() const noexcept -> vec;
 
 private:
    vec colour{0.0, 0.0, 0.0};
    size_t samples_count{0};
 };
 
-inline std::ostream& operator<<(std::ostream& out, const pixel& pxl)
+inline auto operator<<(std::ostream& out, const pixel& pxl) -> std::ostream&
 {
    const colour col = pxl.compute_colour();
 

@@ -17,7 +17,7 @@
 class scene
 {
 public:
-   [[nodiscard]] image render(const camera& cam, const render_settings& settings);
+   [[nodiscard]] auto render(const camera& cam, const render_settings& settings) -> image;
 
    void add_sphere(const sphere& sphere_in, std::unique_ptr<material> p_mat);
    void add_sphere(sphere&& sphere_in, std::unique_ptr<material> p_mat);
@@ -28,14 +28,14 @@ public:
    void set_environment_colour(const colour& environment_in) noexcept;
 
 private:
-   [[nodiscard]] colour radiance(
-      ray const& r, size_t u_samples, size_t v_samples, size_t depth) const;
+   [[nodiscard]] auto radiance(ray const& r, size_t u_samples, size_t v_samples, size_t depth) const
+      -> colour;
 
-   [[nodiscard]] std::optional<hit_record> intersect(const ray& r) const;
-   [[nodiscard]] std::optional<hit_record> triangle_intersect(
-      const ray& ray_in, double nearer_than) const;
-   [[nodiscard]] std::optional<hit_record> sphere_intersect(
-      const ray& ray_in, double nearer_than) const;
+   [[nodiscard]] auto intersect(const ray& r) const -> std::optional<hit_record>;
+   [[nodiscard]] auto triangle_intersect(const ray& ray_in, double nearer_than) const
+      -> std::optional<hit_record>;
+   [[nodiscard]] auto sphere_intersect(const ray& ray_in, double nearer_than) const
+      -> std::optional<hit_record>;
 
 private:
    std::vector<triangle> triangles;

@@ -5,8 +5,8 @@ dielectric::dielectric(const colour &diffuse_in, double refractive_index_in) :
    diffuse(diffuse_in), refractive_index(refractive_index_in)
 {}
 
-auto dielectric::scatter(
-   const ray &ray_in, const hit &hit_in, [[maybe_unused]] double u, [[maybe_unused]] double v) const -> scatter_data
+auto dielectric::scatter(const ray &ray_in, const hit &hit_in, [[maybe_unused]] double u,
+   [[maybe_unused]] double v) const -> scatter_data
 {
    const vec unit_dir = normalise(ray_in.direction());
    const double ior_ratio = (hit_in.front_face) ? (1.0 / refractive_index) : refractive_index;

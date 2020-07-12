@@ -6,8 +6,8 @@ diffuse::diffuse(const colour& emission_in, const colour& diffuse_in) noexcept :
    emission_colour(emission_in), diffuse_colour(diffuse_in)
 {}
 
-auto diffuse::scatter([[maybe_unused]] const ray& ray_in, const hit& hit_in, double u, double v) const
-   -> scatter_data
+auto diffuse::scatter(
+   [[maybe_unused]] const ray& ray_in, const hit& hit_in, double u, double v) const -> scatter_data
 {
    const auto basis = ortho_normal_basis::from_z(hit_in.normal);
    const vec scatter_dir = hemisphere_sample(basis, u, v);

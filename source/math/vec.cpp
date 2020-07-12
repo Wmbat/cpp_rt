@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-double vec::length() const noexcept
+auto vec::length() const noexcept -> double
 {
    return std::sqrt(length_squared());
 }

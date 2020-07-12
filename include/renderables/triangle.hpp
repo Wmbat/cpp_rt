@@ -2,6 +2,7 @@
 
 #include "math/vec.hpp"
 
+#include <array>
 #include <cstddef>
 
 class triangle
@@ -11,19 +12,28 @@ public:
 
    // clang-format off
    template <size_t index> requires(index < 3) 
-   [[nodiscard]] constexpr const vec& vertex() const noexcept
+   [[nodiscard]] constexpr auto vertex() const noexcept -> const vec&
    {
       return data[index];
    }
    // clang-format on
 
-   [[nodiscard]] constexpr const vec& vertex(size_t index) const noexcept { return data[index]; }
+   [[nodiscard]] constexpr auto vertex(size_t index) const noexcept -> const vec&
+   {
+      return data.at(index);
+   }
 
-   [[nodiscard]] constexpr const vec u() const noexcept { return vertex<1>() - vertex<0>(); }
-   [[nodiscard]] constexpr const vec v() const noexcept { return vertex<2>() - vertex<0>(); }
+   [[nodiscard]] constexpr auto u() const noexcept -> const vec
+   {
+      return vertex<1>() - vertex<0>();
+   }
+   [[nodiscard]] constexpr auto v() const noexcept -> const vec
+   {
+      return vertex<2>() - vertex<0>();
+   }
 
-   [[nodiscard]] const norm normal() const;
+   [[nodiscard]] auto normal() const -> const norm;
 
 private:
-   vec data[3];
+   std::array<vec, 3> data;
 };

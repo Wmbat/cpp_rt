@@ -12,7 +12,7 @@ void pixel::add_sample(vec const& colour_in, std::size_t sample_count_in) noexce
    samples_count += sample_count_in;
 }
 
-vec pixel::compute_colour() const noexcept
+auto pixel::compute_colour() const noexcept -> vec
 {
    if (samples_count == 0)
    {

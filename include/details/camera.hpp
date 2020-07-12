@@ -14,16 +14,16 @@ public:
       vec eye;
       vec look_at;
       vec up;
-      double vertical_fov;
-      double aspect_ratio;
-      double aperture;
-      double focus_distance;
+      double vertical_fov{0.0};
+      double aspect_ratio{0.0};
+      double aperture{0.0};
+      double focus_distance{0.0};
    };
 
 public:
    camera(const create_info& info) noexcept;
 
-   [[nodiscard]] ray shoot_ray(double u, double v) const noexcept;
+   [[nodiscard]] auto shoot_ray(double u, double v) const noexcept -> ray;
 
 private:
    const vec origin;

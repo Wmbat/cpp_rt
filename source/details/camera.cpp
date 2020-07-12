@@ -20,7 +20,7 @@ camera::camera(const create_info& info) noexcept : origin(info.eye), lens_radius
    vertical = 2 * half_height * info.focus_distance * axis.y();
 }
 
-ray camera::shoot_ray(double u, double v) const noexcept
+auto camera::shoot_ray(double u, double v) const noexcept -> ray
 {
    const vec random_disk = lens_radius * random_in_unit_disk();
    const vec offset = axis.x() * random_disk.x() + axis.y() * random_disk.y();

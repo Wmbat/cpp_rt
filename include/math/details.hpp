@@ -6,12 +6,14 @@
 #include <cmath>
 #include <random>
 
-constexpr vec reflect(const vec& normal, const vec& incident) noexcept
+inline constinit double HALF_CIRCLE_DEG = 180.0; // NOLINT
+
+constexpr auto reflect(const vec& normal, const vec& incident) noexcept -> vec
 {
    return incident - 2 * dot(normal, incident) * normal;
 }
 
-inline vec refract(vec const& normal, vec const& incident, double ior_ratio) noexcept
+inline auto refract(vec const& normal, vec const& incident, double ior_ratio) noexcept -> vec
 {
    const double cos_theta = dot(normal, -incident);
    const vec parallel = ior_ratio * (incident + cos_theta * normal);
@@ -20,7 +22,7 @@ inline vec refract(vec const& normal, vec const& incident, double ior_ratio) noe
    return parallel + perpendicular;
 }
 
-inline double schlick(double cos, double refractive_index)
+inline auto schlick(double cos, double refractive_index) -> double
 {
    auto const r_0 = (1 - refractive_index) / (1 + refractive_index);
    auto const r = r_0 * r_0;
@@ -28,7 +30,7 @@ inline double schlick(double cos, double refractive_index)
    return r + (1 + r) * pow((1 - cos), 5);
 }
 
-inline double random_double()
+inline auto random_double() -> double
 {
    static std::random_device device{};
    static std::mt19937 rng(device());
@@ -36,17 +38,17 @@ inline double random_double()
 
    return dist(rng);
 }
-inline double random_double(double min, double max)
+inline auto random_double(double min, double max) -> double
 {
    return min + (max - min) * random_double();
 }
 
-inline vec random_vec()
+inline auto random_vec() -> vec
 {
    return {random_double(), random_double(), random_double()};
 }
 
-inline vec random_unit_vector()
+inline auto random_unit_vector() -> vec
 {
    auto a = random_double(0, 2 * M_PI);
    auto z = random_double(-1, 1);
@@ -55,7 +57,7 @@ inline vec random_unit_vector()
    return vec(r * cos(a), r * sin(a), z);
 }
 
-inline vec random_in_unit_disk()
+inline auto random_in_unit_disk() -> vec
 {
    while (true)
    {
@@ -68,7 +70,7 @@ inline vec random_in_unit_disk()
    }
 }
 
-inline vec random_in_unit_sphere()
+inline auto random_in_unit_sphere() -> vec
 {
    while (true)
    {
@@ -81,12 +83,12 @@ inline vec random_in_unit_sphere()
    }
 }
 
-inline double to_radians(double angle) noexcept
+inline auto to_radians(double angle) noexcept -> double
 {
-   return angle * M_PI / 180;
+   return angle * M_PI / HALF_CIRCLE_DEG;
 }
 
-inline vec cone_sample(const norm& direction, double cone_theta, double u, double v)
+inline auto cone_sample(const norm& direction, double cone_theta, double u, double v) -> vec
 {
    if (cone_theta < 0.0000001)
    {
@@ -99,14 +101,16 @@ inline vec cone_sample(const norm& direction, double cone_theta, double u, doubl
    const auto random_theta = v * 2 * M_PI;
    const auto basis = ortho_normal_basis::from_z(direction);
 
-   return normalise(basis.transform(vec(std::cos(random_theta) * radius, std::sin(random_theta) * radius, scale_z)));
+   return normalise(basis.transform(
+      vec(std::cos(random_theta) * radius, std::sin(random_theta) * radius, scale_z)));
 }
 
-inline vec hemisphere_sample(const ortho_normal_basis& basis, double u, double v)
+inline auto hemisphere_sample(const ortho_normal_basis& basis, double u, double v) -> vec
 {
    const auto theta = 2 * M_PI * u;
    const auto radius_squared = v;
    const auto radius = sqrt(radius_squared);
 
-   return normalise(basis.transform(vec(std::cos(theta) * radius, std::sin(theta) * radius, sqrt(1 - radius_squared))));
+   return normalise(basis.transform(
+      vec(std::cos(theta) * radius, std::sin(theta) * radius, sqrt(1 - radius_squared))));
 }

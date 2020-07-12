@@ -14,15 +14,15 @@
 void random_sphere_scene(const render_settings& settings);
 void cornell_box_scene(const render_settings& settings);
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
+auto main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) -> int
 {
    render_settings settings{};
 
-   // random_sphere_scene(settings);
+   random_sphere_scene(settings);
 
-   settings.window_width = 556;
-   settings.window_height = 556;
-   cornell_box_scene(settings);
+   // settings.window_width = 556;
+   // settings.window_height = 556;
+   // cornell_box_scene(settings);
 
    return 0;
 }

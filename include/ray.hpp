@@ -8,10 +8,10 @@ public:
    ray() = default;
    ray(const vec& origin, const vec& direction) noexcept;
 
-   const vec& origin() const noexcept;
-   const vec& direction() const noexcept;
+   [[nodiscard]] auto origin() const noexcept -> const vec&;
+   [[nodiscard]] auto direction() const noexcept -> const vec&;
 
-   [[nodiscard]] vec position_along(double t) const noexcept;
+   [[nodiscard]] auto position_along(double t) const noexcept -> vec;
 
 private:
    vec ori;

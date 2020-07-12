@@ -2,16 +2,16 @@
 
 ray::ray(const vec& origin, const vec& direction) noexcept : ori(origin), dir(direction) {}
 
-const vec& ray::origin() const noexcept
+auto ray::origin() const noexcept -> const vec&
 {
    return ori;
 }
-const vec& ray::direction() const noexcept
+auto ray::direction() const noexcept -> const vec&
 {
    return dir;
 }
 
-vec ray::position_along(double t) const noexcept
+auto ray::position_along(double t) const noexcept -> vec
 {
    return ori + dir * t;
 }

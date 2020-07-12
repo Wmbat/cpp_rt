@@ -14,13 +14,11 @@
 #include <memory>
 #include <optional>
 #include <random>
-#include <ranges>
 #include <thread>
 
-using std::views::iota;
-using std::views::reverse;
+static constinit double limit = std::numeric_limits<double>::infinity();
 
-image scene::render(const camera& cam, const render_settings& settings)
+auto scene::render(const camera& cam, const render_settings& settings) -> image
 {
    size_t curr_samples = 0;
    auto launch = [&] {
@@ -31,7 +29,7 @@ image scene::render(const camera& cam, const render_settings& settings)
 
          for (int y = settings.window_height - 1; y >= 0; --y)
          {
-            for (int x : iota(0, settings.window_width))
+            for (int x = 0; x < settings.window_width; ++x)
             {
                auto const u = (x + random_double()) / (settings.window_width - 1);
                auto const v = (y + random_double()) / (settings.window_height - 1);
@@ -92,7 +90,7 @@ void scene::add_sphere(const sphere& sphere_in, std::unique_ptr<material> materi
 
 void scene::add_sphere(sphere&& sphere_in, std::unique_ptr<material> material)
 {
-   spheres.push_back(std::move(sphere_in));
+   spheres.push_back(sphere_in);
    sphere_mats.push_back(std::move(material));
 }
 
@@ -104,7 +102,7 @@ void scene::add_triangle(const triangle& triangle_in, std::unique_ptr<material> 
 
 void scene::add_triangle(triangle&& triangle_in, std::unique_ptr<material> material)
 {
-   triangles.push_back(std::move(triangle_in));
+   triangles.push_back(triangle_in);
    triangle_mats.push_back(std::move(material));
 }
 
@@ -120,8 +118,8 @@ void scene::set_environment_colour(const colour& environment_in) noexcept
    environment = environment_in;
 }
 
-colour scene::radiance(
-   const ray& ray_in, size_t u_sample_count, size_t v_sample_count, size_t depth) const
+auto scene::radiance(
+   const ray& ray_in, size_t u_sample_count, size_t v_sample_count, size_t depth) const -> colour
 {
    if (depth <= 0)
    {
@@ -153,28 +151,11 @@ colour scene::radiance(
       }
    }
 
-   /*
-   for (size_t u_sample = 0; u_sample < u_sample_count; ++u_sample)
-   {
-      for (size_t v_sample = 0; v_sample < v_sample_count; ++v_sample)
-      {
-         const double u = (u_sample + random_double()) / static_cast<double>(u_sample_count);
-         const double v = (v_sample + random_double()) / static_cast<double>(v_sample_count);
-
-         const auto [emission, diffuse, ray] = mat->scatter(ray_in, hit, u, v);
-
-         result += emission + diffuse * radiance(ray, u_sample_count, v_sample_count, depth - 1);
-      }
-   }
-   */
-
-   return result / (u_sample_count * v_sample_count);
+   return result / static_cast<double>(u_sample_count * v_sample_count);
 }
 
-std::optional<hit_record> scene::intersect(const ray& ray_in) const
+auto scene::intersect(const ray& ray_in) const -> std::optional<hit_record>
 {
-   constexpr double limit = std::numeric_limits<double>::infinity();
-
    const auto sphere_record = sphere_intersect(ray_in, limit);
    const auto triangle_record =
       triangle_intersect(ray_in, sphere_record ? sphere_record->hit_data.distance : limit);
@@ -182,7 +163,8 @@ std::optional<hit_record> scene::intersect(const ray& ray_in) const
    return triangle_record ? triangle_record : sphere_record;
 }
 
-std::optional<hit_record> scene::triangle_intersect(const ray& ray_in, double nearer_than) const
+auto scene::triangle_intersect(const ray& ray_in, double nearer_than) const
+   -> std::optional<hit_record>
 {
    double current_nearest = nearer_than;
 
@@ -251,7 +233,8 @@ std::optional<hit_record> scene::triangle_intersect(const ray& ray_in, double ne
    // clang-format on
 }
 
-std::optional<hit_record> scene::sphere_intersect(const ray& ray_in, double nearer_than) const
+auto scene::sphere_intersect(const ray& ray_in, double nearer_than) const
+   -> std::optional<hit_record>
 {
    double current_nearest = nearer_than;
    std::optional<size_t> nearest_index;

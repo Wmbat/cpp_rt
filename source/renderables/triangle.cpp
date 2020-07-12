@@ -7,7 +7,7 @@ triangle::triangle(const vec& v0, const vec& v1, const vec& v2) noexcept
    data[2] = v2;
 }
 
-const norm triangle::normal() const
+auto triangle::normal() const -> const norm
 {
    return normalise(cross(u(), v()));
 }
