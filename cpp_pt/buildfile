@@ -1,0 +1,13 @@
+exe{main}: {hxx cxx}{**}
+
+cxx.poptions =+ "-I$out_root" "-I$src_root"
+
+macos = ($cxx.target.class == 'macos')
+linux = ($cxx.target.class == 'linux')
+
+if ($linux || $macos)
+{
+    info 'On unix system - enable pthread'
+
+    cxx.coptions =+ -pthread
+}

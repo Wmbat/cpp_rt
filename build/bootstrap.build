@@ -1,0 +1,7 @@
+project = cpp_pt
+
+using version
+using config
+using test
+using install
+using dist
