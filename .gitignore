@@ -1,12 +1,29 @@
-/[Bb]uild
-/build_debug_gcc
-/build_release_gcc
-/build_debug_clang
-/build_release_clang
-/compile_commands.json
-.clangd
-.gdb_history
-tags
+.bdep/
 
-html
-latex
+# Compiler/linker output.
+
+*.d
+*.t
+*.i
+*.ii
+*.o
+*.obj
+*.so
+*.dll
+*.a
+*.lib
+*.exp
+*.pdb
+*.ilk
+*.exe
+*.exe.dlls/
+*.exe.manifest
+*.pc
+
+# Compilation database
+
+compile_commands.json
+
+# LSP data
+
+.clangd/
