@@ -1,11 +1,52 @@
 package maths
 
-import "math"
+import (
+	"math"
+	"math/rand"
+)
 
 type Vec3 struct {
    X float64
    Y float64
    Z float64
+}
+
+func RandomVec3() Vec3 {
+   return Vec3{rand.Float64(), rand.Float64(), rand.Float64()} 
+}
+
+func RandomUnitVec3() Vec3 {
+   a := BoundedRandomFloat(0.0, 2 * math.Pi)
+   z := BoundedRandomFloat(-1.0, 1.0)
+   r := math.Sqrt(1 - z * z)
+
+   return Vec3{r * math.Cos(a), r * math.Sin(a), z} 
+}
+
+func RandomVec3InUnitDisk() Vec3 {
+   for {
+      vec := Vec3{BoundedRandomFloat(-1.0, 1.0), BoundedRandomFloat(-1.0, 1.0), 0}
+      if vec.LengthSquared() >= 1 {
+         continue
+      }
+
+      return vec
+   }
+}
+
+func RandomVec3InUnitSphere() Vec3 {
+   for {
+      vec := Vec3{
+         BoundedRandomFloat(-1.0, 1.0), 
+         BoundedRandomFloat(-1.0, 1.0), 
+         BoundedRandomFloat(-1.0, 1.0)}
+
+      if vec.LengthSquared() >= 1 {
+         continue
+      }
+
+      return vec
+   }
 }
 
 func (lhs *Vec3) Add(rhs *Vec3) *Vec3 {

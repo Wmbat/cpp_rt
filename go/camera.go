@@ -10,3 +10,7 @@ type Camera struct {
     axis maths.OrthoNormalBasis
     lens_radius float64 
 }
+
+func (camera *Camera) ShootRay(u float64, v float64) Ray {
+    return Ray{}
+}
