@@ -1,3 +1,3 @@
-# cpp_pt
+# cpp
 
 A Path-Tracer using C++
