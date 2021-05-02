@@ -1,3 +1,3 @@
 # Created automatically by the config module.
 #
-out_root = /home/wmbat/projects/path_tracer/cpp_pt-gcc-release/cpp_pt/
+out_root = /home/wmbat/projects/path_tracer/cpp_pt-gcc-debug/cpp_pt/

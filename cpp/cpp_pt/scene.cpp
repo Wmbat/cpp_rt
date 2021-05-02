@@ -140,8 +140,8 @@ auto scene::radiance(
    {
       for (size_t v_sample = 0; v_sample < v_sample_count; ++v_sample)
       {
-         const double u = (u_sample + random_double()) / u_sample_count;
-         const double v = (v_sample + random_double()) / v_sample_count;
+         const double u = (double(u_sample) + random_double()) / double(u_sample_count);
+         const double v = (double(v_sample) + random_double()) / double(v_sample_count);
 
          const auto [emission, diffuse, ray] = mat->scatter(ray_in, hit, u, v);
 

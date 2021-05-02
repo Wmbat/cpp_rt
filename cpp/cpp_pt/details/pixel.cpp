@@ -18,8 +18,6 @@ auto pixel::compute_colour() const noexcept -> vec
    {
       return colour;
    }
-   else
-   {
-      return colour * (1.0 / samples_count);
-   }
+
+   return colour * (1.0 / static_cast<double>(samples_count));
 }

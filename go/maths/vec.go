@@ -97,7 +97,15 @@ func Add(lhs, rhs *Vec3) Vec3 {
    return Vec3{X: lhs.X + rhs.X, Y: lhs.Y + rhs.Y, Z: lhs.Z + rhs.Z}
 }
 
+func AddCpy(lhs, rhs Vec3) Vec3 {
+   return Vec3{X: lhs.X + rhs.X, Y: lhs.Y + rhs.Y, Z: lhs.Z + rhs.Z}
+}
+
 func Sub(lhs, rhs *Vec3) Vec3 {
+   return Vec3{X: lhs.X - rhs.X, Y: lhs.Y - rhs.Y, Z: lhs.Z + rhs.Z}
+}
+
+func SubCpy(lhs, rhs Vec3) Vec3 {
    return Vec3{X: lhs.X - rhs.X, Y: lhs.Y - rhs.Y, Z: lhs.Z + rhs.Z}
 }
 
@@ -131,4 +139,8 @@ func Cross(lhs *Vec3, rhs *Vec3) Vec3 {
 
 func Normalise(vec *Vec3) Vec3 {
    return DivScalar(vec, vec.Length())
+}
+
+func NormaliseCpy(vec Vec3) Vec3 {
+   return DivScalar(&vec, vec.Length())
 }

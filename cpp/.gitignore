@@ -1,4 +1,5 @@
 .bdep/
+.cache/
 
 # Compiler/linker output.
 

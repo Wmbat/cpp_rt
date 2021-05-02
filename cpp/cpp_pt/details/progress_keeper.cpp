@@ -10,7 +10,8 @@ progress_keeper::progress_keeper(size_t sample_count_in) noexcept : sample_count
 
 void progress_keeper::update(size_t samples_done) noexcept
 {
-   const double progress = static_cast<double>(samples_done) / sample_count * 100;
+   const double progress =
+      static_cast<double>(samples_done) / static_cast<double>(sample_count) * 100;
    if (progress >= last_progress + minimum_progress)
    {
       std::cout << std::fixed << std::setprecision(2) << progress << "% (" << samples_done << " / "
