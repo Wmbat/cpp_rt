@@ -1,11 +1,11 @@
-#include <cpp_pt/details/image.hpp>
+module;
+
 #include <cpp_pt/details/pixel.hpp>
-#include <cpp_pt/details/progress_keeper.hpp>
+#include <cpp_pt/details/settings.hpp>
 #include <cpp_pt/hit_record.hpp>
 #include <cpp_pt/math/details.hpp>
 #include <cpp_pt/math/vec.hpp>
 #include <cpp_pt/ray.hpp>
-#include <cpp_pt/scene.hpp>
 
 #include <cmath>
 #include <cstddef>
@@ -15,6 +15,10 @@
 #include <optional>
 #include <random>
 #include <thread>
+
+module scene;
+
+import progress_keeper;
 
 static constinit double limit = std::numeric_limits<double>::infinity();
 

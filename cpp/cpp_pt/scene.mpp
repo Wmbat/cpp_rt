@@ -1,20 +1,23 @@
-#pragma once
+module; 
 
-#include <cpp_pt/details/camera.hpp>
-#include <cpp_pt/details/image.hpp>
 #include <cpp_pt/details/settings.hpp>
 #include <cpp_pt/hit_record.hpp>
 #include <cpp_pt/materials/material.hpp>
 #include <cpp_pt/ray.hpp>
-#include <cpp_pt/renderables/sphere.hpp>
-#include <cpp_pt/renderables/triangle.hpp>
 
 #include <memory>
 #include <optional>
 #include <random>
 #include <vector>
 
-class scene
+export module scene;
+
+export import image;
+import camera;
+import renderables.sphere;
+import renderables.triangle;
+
+export class scene
 {
 public:
    [[nodiscard]] auto render(const camera& cam, const render_settings& settings) -> image;

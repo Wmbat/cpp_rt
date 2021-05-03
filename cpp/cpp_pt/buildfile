@@ -1,4 +1,4 @@
-exe{main}: {hxx cxx}{**}
+exe{main}: {mxx hxx cxx}{**}
 
 cxx.poptions =+ "-I$out_root" "-I$src_root"
 

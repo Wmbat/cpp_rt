@@ -1,3 +1,4 @@
+#include <cpp_pt/details/pixel.hpp>
 #include <cpp_pt/details/settings.hpp>
 #include <cpp_pt/materials/dielectric.hpp>
 #include <cpp_pt/materials/diffuse.hpp>
@@ -5,11 +6,14 @@
 #include <cpp_pt/materials/metallic.hpp>
 #include <cpp_pt/math/details.hpp>
 #include <cpp_pt/math/vec.hpp>
-#include <cpp_pt/renderables/triangle.hpp>
-#include <cpp_pt/scene.hpp>
 
 #include <iostream>
 #include <memory>
+
+import scene;
+import camera;
+import renderables.sphere;
+import renderables.triangle;
 
 void random_sphere_scene(const render_settings& settings);
 void cornell_box_scene(const render_settings& settings);

@@ -19,7 +19,13 @@ public:
    };
 
 public:
+   material() = default;
+   material(const material&) = default;
+   material(material&&) = default;
    virtual ~material() = default;
+
+   auto operator=(const material&) -> material& = default;
+   auto operator=(material&&) -> material& = default;
 
    [[nodiscard]] virtual auto scatter(
       const ray& ray_in, const hit& hit_in, double u, double v) const -> scatter_data = 0;
