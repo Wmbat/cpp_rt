@@ -3,11 +3,10 @@ module;
 #include <cpp_pt/details/pixel.hpp>
 
 #include <cassert>
+#include <vector>
+#include <fstream>
 
 export module image;
-
-import <vector>;
-import <fstream>;
 
 export class image
 {

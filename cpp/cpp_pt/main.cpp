@@ -6,12 +6,12 @@
 #include <cpp_pt/materials/metallic.hpp>
 #include <cpp_pt/math/details.hpp>
 #include <cpp_pt/math/vec.hpp>
+#include <cpp_pt/camera.hpp>
 
 #include <iostream>
 #include <memory>
 
 import scene;
-import camera;
 import renderables.sphere;
 import renderables.triangle;
 
@@ -88,30 +88,16 @@ void random_sphere_scene(const render_settings& settings)
       }
    }
 
-   // clang-format off
-   scene.add_sphere(
-         sphere{ .center{ -1000.0, 1000.0, 100.0 }, .radius = 100 },
-         std::make_unique<diffuse_light>(colour{ 20.0, 20.0, 20.0 })
-   );
-
-   scene.add_sphere(
-         sphere{ .center = {0.0, -1000.0, 0.0}, .radius = 1000 },
-         std::make_unique<diffuse>(colour{}, colour{0.5, 0.5, 0.5})
-   );
-
-   scene.add_sphere(
-         sphere { .center = {0.0, 1.0, 0.0}, .radius = 1 },
-         std::make_unique<diffuse>(colour{}, colour{0.4, 0.2, 0.1})
-   );
-   scene.add_sphere(
-         sphere { .center = {-4.0, 1.0, 0.0}, .radius = 1 },
-         std::make_unique<metallic>(colour{}, colour{0.7, 0.6, 0.5}, 0.0)
-   );
-   scene.add_sphere(
-         sphere { .center = {4.0, 1.0, 0.0}, .radius = 1 },
-         std::make_unique<dielectric>(colour{1.0, 1.0, 1.0}, 1.5)
-   );
-   // clang-format on
+   scene.add_sphere(sphere{.center{-1000.0, 1000.0, 100.0}, .radius = 100},
+      std::make_unique<diffuse_light>(colour{20.0, 20.0, 20.0}));
+   scene.add_sphere(sphere{.center = {0.0, -1000.0, 0.0}, .radius = 1000},
+      std::make_unique<diffuse>(colour{}, colour{0.5, 0.5, 0.5}));
+   scene.add_sphere(sphere{.center = {0.0, 1.0, 0.0}, .radius = 1},
+      std::make_unique<diffuse>(colour{}, colour{0.4, 0.2, 0.1}));
+   scene.add_sphere(sphere{.center = {-4.0, 1.0, 0.0}, .radius = 1},
+      std::make_unique<metallic>(colour{}, colour{0.7, 0.6, 0.5}, 0.0));
+   scene.add_sphere(sphere{.center = {4.0, 1.0, 0.0}, .radius = 1},
+      std::make_unique<dielectric>(colour{1.0, 1.0, 1.0}, 1.5));
 
    auto const img = scene.render(cam, settings);
 

@@ -6,6 +6,7 @@ module;
 #include <cpp_pt/math/details.hpp>
 #include <cpp_pt/math/vec.hpp>
 #include <cpp_pt/ray.hpp>
+#include <cpp_pt/camera.hpp>
 
 #include <cmath>
 #include <cstddef>

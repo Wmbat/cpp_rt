@@ -1,14 +1,12 @@
-module;
+#pragma once
 
 #include <cpp_pt/math/details.hpp>
 #include <cpp_pt/math/vec.hpp>
 #include <cpp_pt/ray.hpp>
 
-export module camera;
+#include <cmath>
 
-import <cmath>;
-
-export class camera
+class camera
 {
 public:
    struct create_info

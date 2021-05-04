@@ -18,7 +18,8 @@ public:
    }
 
    // clang-format off
-   template <size_t index> requires(index < 3) 
+   template <size_t index> 
+      requires(index < 3) 
    [[nodiscard]] constexpr auto vertex() const noexcept -> const vec&
    {
       return data[index];
