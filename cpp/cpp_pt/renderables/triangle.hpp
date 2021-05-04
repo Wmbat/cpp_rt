@@ -1,13 +1,11 @@
-module;
+#pragma once
 
 #include <cpp_pt/math/vec.hpp>
 
 #include <array>
 #include <cstddef>
 
-export module renderables.triangle;
-
-export class triangle
+class triangle
 {
 public:
    triangle(const vec& v0, const vec& v1, const vec& v2) noexcept

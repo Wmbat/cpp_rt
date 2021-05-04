@@ -1,13 +1,13 @@
-export module progress_keeper;
+#pragma once
 
-import<cstddef>;
-import<chrono>;
-import<iomanip>;
-import<iostream>;
-import<ostream>;
-import<sstream>;
+#include <chrono>
+#include <cstddef>
+#include <iomanip>
+#include <iostream>
+#include <ostream>
+#include <sstream>
 
-export class progress_keeper
+class progress_keeper
 {
 public:
    explicit progress_keeper(size_t sample_count_in) noexcept : sample_count(sample_count_in) {}

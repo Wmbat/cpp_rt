@@ -1,10 +1,8 @@
-module;
+#pragma once
 
 #include <cpp_pt/ray.hpp>
 
-export module renderables.sphere;
-
-export struct sphere
+struct sphere
 {
    vec center{0.0, 0.0, 0.0};
    double radius{0.0};

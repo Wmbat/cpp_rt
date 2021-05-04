@@ -1,12 +1,14 @@
-module;
+#include <cpp_pt/scene.hpp>
 
+#include <cpp_pt/camera.hpp>
 #include <cpp_pt/details/pixel.hpp>
 #include <cpp_pt/details/settings.hpp>
 #include <cpp_pt/hit_record.hpp>
+#include <cpp_pt/image.hpp>
 #include <cpp_pt/math/details.hpp>
 #include <cpp_pt/math/vec.hpp>
+#include <cpp_pt/progress_keeper.hpp>
 #include <cpp_pt/ray.hpp>
-#include <cpp_pt/camera.hpp>
 
 #include <cmath>
 #include <cstddef>
@@ -16,10 +18,6 @@ module;
 #include <optional>
 #include <random>
 #include <thread>
-
-module scene;
-
-import progress_keeper;
 
 static constinit double limit = std::numeric_limits<double>::infinity();
 

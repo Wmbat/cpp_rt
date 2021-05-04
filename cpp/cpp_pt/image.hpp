@@ -1,14 +1,12 @@
-module;
+#pragma once
 
 #include <cpp_pt/details/pixel.hpp>
 
 #include <cassert>
-#include <vector>
 #include <fstream>
+#include <vector>
 
-export module image;
-
-export class image
+class image
 {
 public:
    image() = default;
