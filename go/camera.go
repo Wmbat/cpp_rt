@@ -1,78 +1,54 @@
 package main
 
-import (
-	"go_pt/maths"
-	"math"
-)
+import "go_pt/maths"
 
 type Camera struct {
-    origin maths.Vec3
-    horizontal maths.Vec3
-    vertical maths.Vec3
-    lowerLeftCorner maths.Vec3
-    axis maths.OrthoNormalBasis
-    lensRadius float64 
+    Origin maths.Vec3
+    Horizontal maths.Vec3
+    Vertical maths.Vec3
+    LowerLeftCorner maths.Vec3 
 }
 
 type CameraCreateInfo struct {
-    Eye maths.Vec3
-    LookAt maths.Vec3
-    Up maths.Vec3 
-    VerticalFOV float64
+    Origin maths.Vec3   
+    Height float64
     AspectRatio float64
-    Aperture float64
-    FocusDistance float64
+    FocalLength float64
+}
+
+func ComputeLowerLeftCorner(origin *maths.Vec3, horizontal *maths.Vec3, 
+    vertical *maths.Vec3, focalLength float64) maths.Vec3 { 
+
+    focal := maths.Vec3{X: 0.0, Y: 0.0, Z: focalLength}
+    halfHorizontal := maths.DivScalar(horizontal, 2.0)
+    halfVertical := maths.DivScalar(vertical, 2.0)
+
+    result := maths.Sub(origin, &focal) 
+    result.Sub(&halfHorizontal)
+    result.Sub(&halfVertical)
+    result.Sub(&focal)
+
+    return result
 }
 
 func NewCamera(info *CameraCreateInfo) Camera {
-    theta := maths.ToRadians(info.VerticalFOV)
-    halfHeight := math.Tan(theta / 2.0)
-    halfWidth := info.AspectRatio * halfHeight
-
-    origin := info.Eye
-    lensRadius := info.Aperture / 2.0
-
-    axisZ := maths.NormaliseCpy(maths.Sub(&origin, &info.LookAt))
-    axisX := maths.NormaliseCpy(maths.Cross(&info.Up, &axisZ))
-    axisY := maths.Cross(&axisZ, &axisX)
-
-    axis := maths.OrthoNormalBasis{X: axisX, Y: axisY, Z: axisZ}
-
-    lowerLeftCorner := maths.SubCpy(
-        maths.SubCpy(
-            maths.SubCpy(
-                origin, 
-                maths.MultScalar(&axis.X, halfWidth * info.FocusDistance)),
-            maths.MultScalar(&axis.Y, halfHeight * info.FocusDistance)),
-        maths.MultScalar(&axis.Z, info.FocusDistance))
-
-    horizontal := maths.MultScalar(&axis.X, 2.0 * halfHeight * info.FocusDistance)
-    vertical := maths.MultScalar(&axis.Y, 2.0 * halfWidth * info.FocusDistance)
+    horizontal := maths.Vec3{X: info.Height * info.AspectRatio, Y: 0.0, Z: 0.0}
+    vertical := maths.Vec3{X: 0.0, Y: info.Height, Z: 0.0}
 
     return Camera{
-        origin: origin, 
-        horizontal: horizontal, 
-        vertical: vertical, 
-        lowerLeftCorner: lowerLeftCorner, 
-        axis: axis, 
-        lensRadius: lensRadius}
+        Origin: info.Origin,
+        Horizontal: horizontal,
+        Vertical: vertical,
+        LowerLeftCorner: ComputeLowerLeftCorner(&info.Origin, &horizontal,&vertical, info.FocalLength)}
 }
 
-func (camera *Camera) ShootRay(u, v float64) Ray {
-    unitDiskVec := maths.RandomVec3InUnitDisk()
-    randomDisk := maths.MultScalar(&unitDiskVec, camera.lensRadius)
-    offset := maths.AddCpy(
-        maths.MultScalar(&camera.axis.X , randomDisk.X), 
-        maths.MultScalar(&camera.axis.Y , randomDisk.Y))
+func (camera *Camera) ShootRay(u float64, v float64) Ray {
+    ur := maths.MultScalar(&camera.Horizontal, u)
+    vr := maths.MultScalar(&camera.Vertical, v)
 
-    direction := maths.SubCpy(
-        maths.AddCpy(
-            maths.AddCpy(
-                camera.lowerLeftCorner, 
-                maths.MultScalar(&camera.horizontal, u)),
-            maths.MultScalar(&camera.vertical, v)),
-        maths.Sub(&camera.origin, &offset))
+    dir := maths.Add(&camera.LowerLeftCorner, &ur)
+    dir.Add(&vr)
+    dir.Sub(&camera.Origin)
 
-
-    return Ray{Origin: maths.Add(&camera.origin, &offset), Direction: direction}
+    return Ray{Origin: camera.Origin, Direction: dir}
 }

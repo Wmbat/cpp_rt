@@ -6,33 +6,33 @@ import (
 )
 
 type Image struct {
-    width int
-    height int
+    Width int
+    Height int
 
-    pixels []Pixel
+    Pixels []maths.Vec3
 }
 
 func NewImage(width int, height int) Image {
-    return Image{width: width, height: height, pixels: make([]Pixel, width * height)}
+    return Image{Width: width, Height: height, Pixels: make([]maths.Vec3, width * height)}
 }
 
-func (image *Image) AddSample(x int, y int, colour *maths.Vec3, count uint64) {
-    image.pixels[x + y * image.width].AddSample(colour, count)
-}
-
-func (image *Image) AddSamplePixel(x int, y int, pixel *Pixel) {
-    image.pixels[x + y * image.width].AddSamplePixel(pixel)
+func (image *Image) SetImagePixelColour(x int, y int, colour *maths.Vec3) {
+    image.Pixels[x + y * image.Width] = *colour;
 }
 
 func (image *Image) String() string {
-    output := fmt.Sprintf("P3\n%v %v\n255\n", image.width, image.height)
+    data := fmt.Sprintf("P3\n%d %d\n255\n", image.Width, image.Height)
+    for y := image.Height - 1; y >= 0; y-- {
+        for x := 0; x < image.Width; x++ {
+            colour := image.Pixels[x + y * image.Width]
 
-    for x := 0; x < image.width; x++ {
-        for y := 0; y < image.width; y++ {
-            output += image.pixels[x + y * image.width].String()
-            output += "\n"
+            data += fmt.Sprintf(
+                "%d %d %d\n", 
+                int32(colour.X * 255.999), 
+                int32(colour.Y * 255.999), 
+                int32(colour.Z * 255.999))
         }
     }
 
-    return output
+    return data
 }
