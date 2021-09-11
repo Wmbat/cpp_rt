@@ -19,6 +19,14 @@ func (lhs *Vec3) Add(rhs *Vec3) *Vec3 {
    return lhs
 }
 
+func (lhs *Vec3) AddScalar(scalar float64) *Vec3 {
+   lhs.X += scalar 
+   lhs.Y += scalar 
+   lhs.Z += scalar 
+
+   return lhs
+}
+
 func (lhs *Vec3) Sub(rhs *Vec3) *Vec3 {
    lhs.X -= rhs.X
    lhs.Y -= rhs.Y
@@ -79,6 +87,17 @@ func DivScalar(lhs *Vec3, rhs float64) Vec3 {
     return MultScalar(lhs, 1 / rhs)
 }
 
-func Normalise(vec *Vec3) Vec3 {
+func Vec3Normalise(vec *Vec3) Vec3 {
     return DivScalar(vec, vec.Length())
 }
+
+func Vec3Dot(lhs *Vec3, rhs *Vec3) float64 {
+    return lhs.X * rhs.X + lhs.Y * rhs.Y + lhs.Z * rhs.Z
+}
+
+func Vec3Cross(lhs *Vec3, rhs *Vec3) Vec3 {
+    return Vec3{
+        X: lhs.Y * rhs.Z - lhs.Z * rhs.Y,
+        Y: lhs.Z * rhs.X - lhs.X * rhs.Z,
+        Z: lhs.X * rhs.Y - lhs.Y * rhs.X} 
+}    

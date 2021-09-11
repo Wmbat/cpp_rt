@@ -1,6 +1,9 @@
 package main
 
-import "go_pt/maths"
+import (
+	"go_rt/core"
+	"go_rt/maths"
+)
 
 type Camera struct {
     Origin maths.Vec3
@@ -23,7 +26,7 @@ func ComputeLowerLeftCorner(origin *maths.Vec3, horizontal *maths.Vec3,
     halfHorizontal := maths.DivScalar(horizontal, 2.0)
     halfVertical := maths.DivScalar(vertical, 2.0)
 
-    result := maths.Sub(origin, &focal) 
+    result := *origin
     result.Sub(&halfHorizontal)
     result.Sub(&halfVertical)
     result.Sub(&focal)
@@ -42,7 +45,7 @@ func NewCamera(info *CameraCreateInfo) Camera {
         LowerLeftCorner: ComputeLowerLeftCorner(&info.Origin, &horizontal,&vertical, info.FocalLength)}
 }
 
-func (camera *Camera) ShootRay(u float64, v float64) Ray {
+func (camera *Camera) ShootRay(u float64, v float64) core.Ray {
     ur := maths.MultScalar(&camera.Horizontal, u)
     vr := maths.MultScalar(&camera.Vertical, v)
 
@@ -50,5 +53,5 @@ func (camera *Camera) ShootRay(u float64, v float64) Ray {
     dir.Add(&vr)
     dir.Sub(&camera.Origin)
 
-    return Ray{Origin: camera.Origin, Direction: dir}
+    return core.Ray{Origin: camera.Origin, Direction: dir}
 }
