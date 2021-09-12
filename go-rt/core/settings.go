@@ -4,5 +4,8 @@ type Settings struct {
     ImageWidth int
     ImageHeight int
     
-    SampleCount uint32 
+    SampleCount uint64
+    BounceDepth uint64
+
+    ScatterRayCount uint64
 }

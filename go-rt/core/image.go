@@ -40,9 +40,9 @@ func (image *Image) String() string {
 
             data += fmt.Sprintf(
                 "%d %d %d\n", 
-                int32(colour.R * 255.999), 
-                int32(colour.G * 255.999), 
-                int32(colour.B * 255.999))
+                int32(colour.R * 256.0), 
+                int32(colour.G * 256.0), 
+                int32(colour.B * 256.0))
         }
     }
 

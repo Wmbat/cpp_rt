@@ -3,6 +3,7 @@ package maths
 import (
 	"fmt"
 	"math"
+	"math/rand"
 )
 
 type Vec3 struct {
@@ -101,3 +102,41 @@ func Vec3Cross(lhs *Vec3, rhs *Vec3) Vec3 {
         Y: lhs.Z * rhs.X - lhs.X * rhs.Z,
         Z: lhs.X * rhs.Y - lhs.Y * rhs.X} 
 }    
+
+func RandomVec3() Vec3 {
+    return Vec3{X: rand.Float64(), Y: rand.Float64(), Z: rand.Float64()}
+}
+
+func RandomBoundedVec3(min float64, max float64) Vec3 {
+    return Vec3{
+        X: RandomFloat64(min, max),
+        Y: RandomFloat64(min, max),
+        Z: RandomFloat64(min, max)}
+}
+
+func RandomVec3InUnitSphere() Vec3 {
+     for {
+        vec := RandomBoundedVec3(-1.0, 1.0)
+
+        if vec.LengthSquared() < 1.0 {
+            return vec 
+        }
+     }
+}
+
+func RandomNormalizedVec3() Vec3 {
+    vec := RandomVec3InUnitSphere();
+    vec.Normalise()
+
+    return vec;
+}
+
+func RandomVec3InHemisphere(normal *Vec3) Vec3 {
+    normalized := RandomNormalizedVec3()
+    if Vec3Dot(&normalized, normal) > 0.0 {
+        return normalized
+    } else {
+        return MultScalar(&normalized, -1.0)
+    }
+}
+

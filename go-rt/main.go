@@ -16,7 +16,7 @@ func FindClosestCollision(ray *core.Ray, renderables []renderable.Renderable) re
     closestTime := math.MaxFloat64
     
     for _, renderable := range renderables {
-        localResult := renderable.CheckRayCollision(ray, 0.0, closestTime)
+        localResult := renderable.CheckRayCollision(ray, 0.001, closestTime)
 
         if localResult.HasValue {
             result.HasValue = true
@@ -29,14 +29,30 @@ func FindClosestCollision(ray *core.Ray, renderables []renderable.Renderable) re
     return result
 }
 
-func ComputeRayColour(ray *core.Ray, renderables []renderable.Renderable) core.Colour {    
+func Radiance(ray *core.Ray, 
+    renderables []renderable.Renderable, 
+    bounceDepth uint64, 
+    scatterRayCount uint64) core.Colour {    
+
+    if bounceDepth == 0 {
+        return core.Colour{R: 0.0, G: 0.0, B: 0.0}
+    }
+
     collisionResult := FindClosestCollision(ray, renderables)
     if collisionResult.HasValue {
-        normalColour := core.Vec3ToColour(&collisionResult.Record.Normal)
-        normalColour.AddScalar(1.0)
-        normalColour.MultScalar(0.5)
+        randomVec := maths.RandomVec3InHemisphere(&collisionResult.Record.Normal)
+
+        target := maths.Add(&collisionResult.Record.Position, &collisionResult.Record.Normal)
+        target.Add(&randomVec)
         
-        return normalColour
+        outRay := core.Ray{
+            Origin: collisionResult.Record.Position,
+            Direction: maths.Sub(&target, &collisionResult.Record.Position)}  
+
+        result := Radiance(&outRay, renderables, bounceDepth - 1, scatterRayCount)
+        result.MultScalar(0.5)
+
+        return result;
     }
 
     unitVector := maths.Vec3Normalise(&ray.Direction)
@@ -58,7 +74,8 @@ func RenderSampleImage(camera *Camera, renderables []renderable.Renderable, sett
             v := (float64(y) + rand.Float64()) / float64(image.Height - 1)
 
             ray := camera.ShootRay(u, v)
-            colour := ComputeRayColour(&ray, renderables)
+
+            colour := Radiance(&ray, renderables, settings.BounceDepth, settings.ScatterRayCount)
 
             image.AddSamples(x, y, &colour, 1)
         }
@@ -69,11 +86,14 @@ func RenderSampleImage(camera *Camera, renderables []renderable.Renderable, sett
 
 func main() {
     aspectRatio := 16.0 / 9.0
+    imageWidth := 400
 
     settings := core.Settings{
-        ImageWidth: 400,
-        ImageHeight: int(400 / aspectRatio),
-        SampleCount: 12}
+        ImageWidth: imageWidth,
+        ImageHeight: int(float64(imageWidth) / aspectRatio),
+        SampleCount: 100,
+        BounceDepth: 50,
+        ScatterRayCount: 2}
 
     cameraCreateInfo := CameraCreateInfo{
         Origin: maths.Vec3{X: 0.0, Y: 0.0, Z: 0.0},
@@ -91,7 +111,7 @@ func main() {
         Radius: 100.0})
 
     finalImage := core.NewImage(settings.ImageWidth, settings.ImageHeight)
-    for i := uint32(0); i < settings.SampleCount; i++ {
+    for i := uint64(0); i < settings.SampleCount; i++ {
         localImage := RenderSampleImage(&camera, renderables, &settings)
 
         finalImage.AddSampleImage(&localImage)
