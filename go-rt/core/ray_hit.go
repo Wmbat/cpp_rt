@@ -1,8 +1,8 @@
-package renderable
+package core
 
 import "go_rt/maths"
 
-type CollisionRecord struct {
+type RayHit struct {
     Position maths.Vec3
     Normal maths.Vec3
     Time float64

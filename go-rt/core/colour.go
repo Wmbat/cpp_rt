@@ -24,6 +24,14 @@ func (c *Colour) AddScalar(scalar float64) *Colour {
     return c;
 }
 
+func (this *Colour) Mult(c *Colour) *Colour {
+    this.R *= c.R 
+    this.G *= c.G
+    this.B *= c.B
+
+    return c;
+}
+
 func (c *Colour) MultScalar(scalar float64) *Colour {
     c.R *= scalar 
     c.G *= scalar 

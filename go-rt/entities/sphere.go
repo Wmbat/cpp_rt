@@ -1,7 +1,8 @@
-package renderable
+package entities
 
 import (
 	"go_rt/core"
+	"go_rt/materials"
 	"go_rt/maths"
 	"math"
 )
@@ -9,24 +10,26 @@ import (
 type Sphere struct {
     Center maths.Vec3
     Radius float64
+
+    Mat materials.Material
 }
 
-func (s Sphere) CheckRayCollision(ray *core.Ray, minTime float64, maxTime float64) RayCollisionResult {
-    lineToSphere :=  maths.Sub(&ray.Origin, &s.Center)
+func (this Sphere) CheckRayHit(ray *core.Ray, minTime float64, maxTime float64) RayHitResult {
+    lineToSphere :=  maths.Sub(&ray.Origin, &this.Center)
 
     // We are computing the discriminant of the quadratic formula here
     // giving us the closest point of interection between the ray and the sphere
 
     a := ray.Direction.LengthSquared()
     halfB := maths.Vec3Dot(&lineToSphere, &ray.Direction)
-    c := lineToSphere.LengthSquared() - s.Radius * s.Radius
+    c := lineToSphere.LengthSquared() - this.Radius * this.Radius
 
     discriminant := halfB * halfB - a * c
 
     if discriminant < 0 {
-        return RayCollisionResult{HasValue: false}
+        return RayHitResult{HasValue: false}
     }
-
+ 
     sqrtDiscriminant := math.Sqrt(discriminant)
 
     // Check the roots to figure out which is closer. It's hidden
@@ -36,13 +39,13 @@ func (s Sphere) CheckRayCollision(ray *core.Ray, minTime float64, maxTime float6
     if root < minTime || maxTime < root {
         root = (-halfB + sqrtDiscriminant) / a
         if  root < minTime || maxTime < root {
-            return RayCollisionResult{HasValue: false}    
+            return RayHitResult{HasValue: false}    
         }
     }
 
     rayAlongT := ray.PositionAlong(root)
-    fromCenter := maths.Sub(&rayAlongT, &s.Center)
-    outwardNormal := maths.DivScalar(&fromCenter, s.Radius)
+    fromCenter := maths.Sub(&rayAlongT, &this.Center)
+    outwardNormal := maths.DivScalar(&fromCenter, this.Radius)
 
     frontFace := maths.Vec3Dot(&ray.Direction, &outwardNormal) < 0.0
     normal := maths.Vec3{}
@@ -52,11 +55,11 @@ func (s Sphere) CheckRayCollision(ray *core.Ray, minTime float64, maxTime float6
         normal = maths.MultScalar(&outwardNormal, -1.0)
     }
 
-    return RayCollisionResult{
-        HasValue: true, 
-        Record: CollisionRecord{
+    return RayHitResult{HasValue: true, Record: RayHitRecord{
+        Hit: core.RayHit{
             Position: rayAlongT,
             Normal: normal,
             Time: root,
-            FrontFace: frontFace}}
+            FrontFace: frontFace},
+        Mat: this.Mat}}
 }

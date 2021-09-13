@@ -3,70 +3,73 @@ package main
 import (
 	"bufio"
 	"go_rt/core"
+	"go_rt/entities"
+	"go_rt/materials"
 	"go_rt/maths"
-	"go_rt/renderable"
 	"log"
 	"math"
 	"math/rand"
 	"os"
 )
 
-func FindClosestCollision(ray *core.Ray, renderables []renderable.Renderable) renderable.RayCollisionResult {
-    result := renderable.RayCollisionResult{HasValue: false}
+func FindClosestCollision(ray *core.Ray, sceneEntities []entities.Entity) entities.RayHitResult {
+    result := entities.RayHitResult{HasValue: false}
     closestTime := math.MaxFloat64
     
-    for _, renderable := range renderables {
-        localResult := renderable.CheckRayCollision(ray, 0.001, closestTime)
+    for _, renderable := range sceneEntities{
+        localResult := renderable.CheckRayHit(ray, 0.001, closestTime)
 
         if localResult.HasValue {
             result.HasValue = true
             result.Record = localResult.Record
 
-            closestTime = result.Record.Time
+            closestTime = result.Record.Hit.Time
         }
     }
 
     return result
 }
 
-func Radiance(ray *core.Ray, 
-    renderables []renderable.Renderable, 
-    bounceDepth uint64, 
+func Radiance(ray *core.Ray, sceneEntities []entities.Entity, bounceDepth uint64, 
     scatterRayCount uint64) core.Colour {    
 
     if bounceDepth == 0 {
         return core.Colour{R: 0.0, G: 0.0, B: 0.0}
     }
 
-    collisionResult := FindClosestCollision(ray, renderables)
+    collisionResult := FindClosestCollision(ray, sceneEntities)
     if collisionResult.HasValue {
-        randomVec := maths.RandomVec3InHemisphere(&collisionResult.Record.Normal)
+        mat := collisionResult.Record.Mat
 
-        target := maths.Add(&collisionResult.Record.Position, &collisionResult.Record.Normal)
-        target.Add(&randomVec)
+        scatterData := mat.Scatter(ray, &collisionResult.Record.Hit)
+
+        result := core.Colour{}
         
-        outRay := core.Ray{
-            Origin: collisionResult.Record.Position,
-            Direction: maths.Sub(&target, &collisionResult.Record.Position)}  
+        for i := uint64(0); i < scatterRayCount; i++ {
+            localResult := Radiance(&scatterData.Ray, sceneEntities, bounceDepth - 1, scatterRayCount)
+            localResult.Mult(&scatterData.Diffuse)
+            localResult.Add(&scatterData.Emission)
 
-        result := Radiance(&outRay, renderables, bounceDepth - 1, scatterRayCount)
-        result.MultScalar(0.5)
+            result.Add(&localResult)
+        }
+
+        result.MultScalar(1 / float64(scatterRayCount))
 
         return result;
-    }
+    } else {
+        unitVector := maths.Vec3Normalise(&ray.Direction)
 
-    unitVector := maths.Vec3Normalise(&ray.Direction)
-
-    blendFactor := 0.5 * (unitVector.Y + 1.0) 
-    start := maths.Vec3{X: 1.0, Y: 1.0, Z: 1.0}
-    end := maths.Vec3{X: 0.5, Y: 0.7, Z:1.0}
+        blendFactor := 0.5 * (unitVector.Y + 1.0) 
+        start := maths.Vec3{X: 1.0, Y: 1.0, Z: 1.0}
+        end := maths.Vec3{X: 0.5, Y: 0.7, Z:1.0}
  
-    lerp := maths.Lerp(&start, &end, blendFactor)
+        lerp := maths.Lerp(&start, &end, blendFactor)
 
-    return core.Vec3ToColour(&lerp)
+        return core.Vec3ToColour(&lerp)
+    }
 }
 
-func RenderSampleImage(camera *Camera, renderables []renderable.Renderable, settings *core.Settings) core.Image {    
+func RenderSampleImage(camera *Camera, sceneEntities []entities.Entity, settings *core.Settings) core.Image {    
     image := core.NewImage(settings.ImageWidth, settings.ImageHeight)
     for y := image.Height - 1; y >= 0; y-- {
         for x := 0; x < image.Width; x++ {
@@ -75,7 +78,7 @@ func RenderSampleImage(camera *Camera, renderables []renderable.Renderable, sett
 
             ray := camera.ShootRay(u, v)
 
-            colour := Radiance(&ray, renderables, settings.BounceDepth, settings.ScatterRayCount)
+            colour := Radiance(&ray, sceneEntities, settings.BounceDepth, settings.ScatterRayCount)
 
             image.AddSamples(x, y, &colour, 1)
         }
@@ -91,8 +94,8 @@ func main() {
     settings := core.Settings{
         ImageWidth: imageWidth,
         ImageHeight: int(float64(imageWidth) / aspectRatio),
-        SampleCount: 100,
-        BounceDepth: 50,
+        SampleCount: 50,
+        BounceDepth: 5,
         ScatterRayCount: 2}
 
     cameraCreateInfo := CameraCreateInfo{
@@ -102,17 +105,26 @@ func main() {
         FocalLength: 1.0}
 
     camera := NewCamera(&cameraCreateInfo)
-    renderables := make([]renderable.Renderable, 0)
-    renderables = append(renderables, renderable.Sphere{
+
+    entityMaterials := make([]materials.Material, 0)
+    entityMaterials = append(entityMaterials, materials.Lambertian{
+        Diffuse: core.Colour{R: 0.7, G: 0.3, B: 0.3}})
+    entityMaterials = append(entityMaterials, materials.Lambertian{
+        Diffuse: core.Colour{R: 0.8, G: 0.8, B: 0.0}})
+
+    sceneEntities := make([]entities.Entity, 0)
+    sceneEntities = append(sceneEntities, entities.Sphere{
         Center: maths.Vec3{X: 0.0, Y: 0.0, Z: -1.0},
-        Radius: 0.5})
-    renderables = append(renderables, renderable.Sphere{
+        Radius: 0.5,
+        Mat: entityMaterials[0],})
+    sceneEntities = append(sceneEntities, entities.Sphere{
         Center: maths.Vec3{X: 0.0, Y: -100.5, Z: -1.0},
-        Radius: 100.0})
+        Radius: 100.0,
+        Mat: entityMaterials[1]})
 
     finalImage := core.NewImage(settings.ImageWidth, settings.ImageHeight)
     for i := uint64(0); i < settings.SampleCount; i++ {
-        localImage := RenderSampleImage(&camera, renderables, &settings)
+        localImage := RenderSampleImage(&camera, sceneEntities, &settings)
 
         finalImage.AddSampleImage(&localImage)
     }
