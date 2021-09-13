@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"go_rt/core"
 	"go_rt/entities"
 	"go_rt/materials"
@@ -94,9 +95,9 @@ func main() {
     settings := core.Settings{
         ImageWidth: imageWidth,
         ImageHeight: int(float64(imageWidth) / aspectRatio),
-        SampleCount: 50,
+        SampleCount: 24,
         BounceDepth: 5,
-        ScatterRayCount: 2}
+        ScatterRayCount: 4}
 
     cameraCreateInfo := CameraCreateInfo{
         Origin: maths.Vec3{X: 0.0, Y: 0.0, Z: 0.0},
@@ -111,12 +112,26 @@ func main() {
         Diffuse: core.Colour{R: 0.7, G: 0.3, B: 0.3}})
     entityMaterials = append(entityMaterials, materials.Lambertian{
         Diffuse: core.Colour{R: 0.8, G: 0.8, B: 0.0}})
+    entityMaterials = append(entityMaterials, materials.Metal{
+        Diffuse: core.Colour{R: 0.8, G: 0.8, B: 0.8},
+        Roughness: 0.3,})
+    entityMaterials = append(entityMaterials, materials.Metal{
+        Diffuse: core.Colour{R: 0.8, G: 0.6, B: 0.2},
+        Roughness: 1.0,})
 
     sceneEntities := make([]entities.Entity, 0)
     sceneEntities = append(sceneEntities, entities.Sphere{
         Center: maths.Vec3{X: 0.0, Y: 0.0, Z: -1.0},
         Radius: 0.5,
         Mat: entityMaterials[0],})
+    sceneEntities = append(sceneEntities, entities.Sphere{
+        Center: maths.Vec3{X: -1.0, Y: 0.0, Z: -1.0},
+        Radius: 0.5,
+        Mat: entityMaterials[2],})
+    sceneEntities = append(sceneEntities, entities.Sphere{
+        Center: maths.Vec3{X: 1.0, Y: 0.0, Z: -1.0},
+        Radius: 0.5,
+        Mat: entityMaterials[3],})
     sceneEntities = append(sceneEntities, entities.Sphere{
         Center: maths.Vec3{X: 0.0, Y: -100.5, Z: -1.0},
         Radius: 100.0,
@@ -127,6 +142,8 @@ func main() {
         localImage := RenderSampleImage(&camera, sceneEntities, &settings)
 
         finalImage.AddSampleImage(&localImage)
+
+        fmt.Println(fmt.Sprintf("Render Status: %3.2f%%", float64(i) / float64(settings.SampleCount) * 100))
     }
 
 

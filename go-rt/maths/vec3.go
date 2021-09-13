@@ -72,6 +72,13 @@ func (lhs *Vec3) String() string {
     return fmt.Sprintf("%f %f %f", lhs.X, lhs.Y, lhs.Z)
 }
 
+func (this Vec3) IsNearZero() bool {
+    epsilon := 1e-8
+    return (math.Abs(this.X) < epsilon) &&
+        (math.Abs(this.Y) < epsilon) &&
+        (math.Abs(this.Z) < epsilon)
+}
+
 func Add(lhs *Vec3, rhs *Vec3) Vec3 {
     return Vec3{X: lhs.X + rhs.X, Y: lhs.Y + rhs.Y, Z: lhs.Z + rhs.Z}
 }
