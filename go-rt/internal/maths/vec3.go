@@ -5,6 +5,9 @@ import (
 	"math"
 )
 
+/*
+ *
+ */
 type Vec3 struct {
 	X float64
 	Y float64
@@ -35,35 +38,39 @@ func (this Vec3) LengthSquared() float64 {
 	return x + y + z
 }
 
-func (this Vec3) Add(val *Vec3) Vec3 {
+func (lhs Vec3) Add(rhs Vec3) Vec3 {
 	return Vec3{
-		X: this.X + val.X,
-		Y: this.Y + val.Y,
-		Z: this.Z + val.Z}
+		X: rhs.X + lhs.X,
+		Y: rhs.Y + lhs.Y,
+		Z: rhs.Z + lhs.Z}
 }
 
-func (this Vec3) Sub(val *Vec3) Vec3 {
+func (lhs Vec3) Sub(rhs Vec3) Vec3 {
 	return Vec3{
-		X: this.X - val.X,
-		Y: this.Y - val.Y,
-		Z: this.Z - val.Z}
+		X: rhs.X - lhs.X,
+		Y: rhs.Y - lhs.Y,
+		Z: rhs.Z - lhs.Z}
 }
 
-func (this Vec3) Mult(val *Vec3) Vec3 {
+func (lhs Vec3) Mult(rhs Vec3) Vec3 {
 	return Vec3{
-		X: this.X * val.X,
-		Y: this.Y * val.Y,
-		Z: this.Z * val.Z}
+		X: lhs.X * rhs.X,
+		Y: lhs.Y * rhs.Y,
+		Z: lhs.Z * rhs.Z}
 }
 
-func (this Vec3) Scale(factor float64) Vec3 {
+func (lhs Vec3) Scale(factor float64) Vec3 {
 	return Vec3{
-		X: this.X * factor,
-		Y: this.Y * factor,
-		Z: this.Z * factor}
+		X: lhs.X * factor,
+		Y: lhs.Y * factor,
+		Z: lhs.Z * factor}
 }
 
-func DotProduct(lhs *Vec3, rhs *Vec3) float64 {
+func (vec Vec3) Normalize() Vec3 {
+	return vec.Scale(1 / vec.Length())
+}
+
+func DotProduct(lhs Vec3, rhs Vec3) float64 {
 	x := lhs.X * rhs.X
 	y := lhs.Y * rhs.Y
 	z := lhs.Z * rhs.Z
@@ -71,14 +78,10 @@ func DotProduct(lhs *Vec3, rhs *Vec3) float64 {
 	return x + y + z
 }
 
-func CrossProduct(lhs *Vec3, rhs *Vec3) Vec3 {
-	x := lhs.Y*rhs.Z - lhs.Z*rhs.Y
-	y := lhs.Z*rhs.X - lhs.X*rhs.Z
-	z := lhs.X*rhs.Y - lhs.Y*rhs.X
+func CrossProduct(lhs Vec3, rhs Vec3) Vec3 {
+	x := (lhs.Y * rhs.Z) - (lhs.Z * rhs.Y)
+	y := (lhs.Z * rhs.X) - (lhs.X * rhs.Z)
+	z := (lhs.X * rhs.Y) - (lhs.Y * rhs.X)
 
 	return Vec3{X: x, Y: y, Z: z}
-}
-
-func UnitVector(value *Vec3) Vec3 {
-	return value.Scale(1 / value.Length())
 }

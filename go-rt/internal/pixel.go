@@ -1,28 +1,34 @@
-package internal
+package core
 
 import (
-	"fmt"
 	"github.com/wmbat/ray_tracer/internal/maths"
 )
 
 type Pixel struct {
-	Red   float64
-	Green float64
-	Blue  float64
+	Colour      Colour
+	SampleCount uint64
 }
 
-func (this *Pixel) Init(val *maths.Vec3) {
-	this.Red = val.X
-	this.Green = val.Y
-	this.Blue = val.Z
+func (this *Pixel) AddSamples(colour Colour, sampleCount uint64) {
+    this.Colour.Add(colour)
+    this.SampleCount += sampleCount
 }
 
-func (this Pixel) String() string {
-	const factor float64 = 255.999
+func (this *Pixel) AddSamplePixel(pixel Pixel) {
+    this.Colour.Add(pixel.Colour)
+    this.SampleCount += pixel.SampleCount
+}
 
-	red := this.Red * factor
-	green := this.Green * factor
-	blue := this.Blue * factor
 
-	return fmt.Sprint(red, green, blue)
+func (this Pixel) GetSampledColour() Colour {
+	if this.SampleCount == 0 {
+		return this.Colour
+	}
+
+	sampleColour := this.Colour.Scale(1.0 / float64(this.SampleCount))
+
+	return Colour{
+		Red: maths.Clamp(sampleColour.Red, 0, 0.999),
+		Green: maths.Clamp(sampleColour.Green, 0, 0.999),
+		Blue: maths.Clamp(sampleColour.Blue, 0, 0.999)}
 }

@@ -1,41 +1,36 @@
-package internal
+package core
 
 import (
 	"fmt"
-	"reflect"
-	"strings"
+	"os"
 )
 
 type Image struct {
-	Height int
-	Width  int
-
-	Data [][]Pixel
+	Width  int64
+	Height int64
+	Pixels []Pixel
 }
 
-func (this *Image) Init(width int, height int) {
-	this.Width = width
-	this.Height = height
-	this.Data = make([][]Pixel, this.Width)
-	for i := 0; i < this.Width; i++ {
-		this.Data[i] = make([]Pixel, this.Height)
-	}
+func NewImage(width int64, height int64) Image {
+	return Image{
+		Width:  width,
+		Height: height,
+		Pixels: make([]Pixel, (width * height))}
 }
 
-func (this *Image) WritePixel(x int, y int, value *Pixel) {
-	this.Data[x][y] = *value
+func (this Image) WritePixel(x int64, y int64, pixel Pixel) {
+	index := x + (y * this.Width)
+	this.Pixels[index].AddSamplePixel(pixel)
 }
 
-func (this Image) String() string {
-	builder := strings.Builder{}
-	builder.WriteString(fmt.Sprintf("P3\n%d %d\n255\n", this.Width, this.Height))
-	builder.Grow(int(reflect.TypeOf(this.Data[0][0]).Size()))
+func (this Image) SaveToFile(file *os.File) {
+	file.WriteString(fmt.Sprintf("P3\n%d %d\n255\n", this.Width, this.Height))
+	for y := this.Height - 1; y >= 0; y-- {
+		for x := int64(0); x < this.Width; x++ {
+			index := x + (y * this.Width)
+			colour := this.Pixels[index].GetSampledColour().ToTrueColour()
 
-	for j := this.Height - 1; j >= 0; j-- {
-		for i := 0; i < this.Width; i++ {
-			builder.WriteString(fmt.Sprintln(this.Data[i][j].String()))
+			file.WriteString(fmt.Sprintf("%s\n", colour.String()))
 		}
 	}
-
-	return builder.String()
 }

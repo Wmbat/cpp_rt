@@ -4,28 +4,30 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/wmbat/ray_tracer/internal"
+	core "github.com/wmbat/ray_tracer/internal"
 	"github.com/wmbat/ray_tracer/internal/maths"
+	"github.com/wmbat/ray_tracer/internal/utils"
 )
 
-const imageWidth int = 720
-const imageHeight int = 480
+const imageWidth int64 = 720
+const imageHeight int64 = 480
 const aspectRatio float64 = float64(imageWidth) / float64(imageHeight)
 
-func calculatePixel(ray *internal.Ray) internal.Pixel {
-	unitDir := maths.UnitVector(&ray.Direction)
-	t := 0.5 * (unitDir.Y + 1.0)
+func calculatePixel(ray core.Ray) core.Pixel {
+	t := 0.5 * (ray.Direction.Normalize().Y + 1.0)
 
-	gradient := maths.Vec3{X: 0.5, Y: 0.7, Z: 1.0}.Scale(t)
-	colour := maths.Vec3{X: 1.0, Y: 1.0, Z: 1.0}.Scale(1.0 - t).Add(&gradient)
+	white := core.Colour{Red: 1.0, Green: 1.0, Blue: 1.0}
+	gradient := core.Colour{Red: 0.5, Green: 0.7, Blue: 1.0}
 
-	return internal.Pixel{Red: colour.X, Green: colour.Y, Blue: colour.Z}
+	blendedColour := white.Scale(1.0 - t).Add(gradient.Scale(t))
+
+	return core.Pixel{Colour: blendedColour, SampleCount: 1}
 }
 
 func main() {
 	imageFile := "image.ppm"
 
-	if internal.DoesFileExist(imageFile) {
+	if utils.DoesFileExist(imageFile) {
 		os.Remove(imageFile)
 	}
 
@@ -35,8 +37,9 @@ func main() {
 	}
 	defer f.Close()
 
-	image := internal.Image{}
-	image.Init(imageWidth, imageHeight)
+	image := core.NewImage(imageWidth, imageHeight)
+
+	fmt.Printf("Creating an image of size <%d, %d>\n", image.Width, image.Height)
 
 	viewportHeight := 2.0
 	viewportWidth := aspectRatio * viewportHeight
@@ -46,24 +49,26 @@ func main() {
 	horizontal := maths.Vec3{X: viewportWidth, Y: 0, Z: 0}
 	vertical := maths.Vec3{X: 0, Y: viewportHeight, Z: 0}
 
-	lowerLeftCorner := internal.CalculateLowerLeftCorner(&origin, &horizontal, &vertical, focalLength)
+	horizontalMidpoint := horizontal.Scale(1 / 2).ToPoint3()
+	verticalMidpoint := vertical.Scale(1 / 2).ToPoint3()
+	depth := maths.Point3{X: 0, Y: 0, Z: focalLength}
 
-	for j := imageHeight - 1; j >= 0; j-- {
-		for i := 0; i < imageWidth; i++ {
-			u := float64(i) / float64(imageWidth-1)
-			v := float64(j) / float64(imageHeight-1)
+	lowerLeftCorner := origin.Sub(horizontalMidpoint).Sub(verticalMidpoint).Sub(depth)
+
+	for j := image.Height - 1; j >= 0; j-- {
+		for i := int64(0); i < image.Width; i++ {
+			u := float64(i) / float64(image.Width-1)
+			v := float64(j) / float64(image.Height-1)
 
 			scaledHorizontal := horizontal.Scale(u)
 			scaledVertical := vertical.Scale(v)
-			rayDir := lowerLeftCorner.Sub(&origin).ToVec3().Add(&scaledHorizontal).Add(&scaledVertical)
+			rayDir := lowerLeftCorner.Sub(origin).ToVec3().Add(scaledHorizontal).Add(scaledVertical)
 
-			ray := internal.Ray{Origin: origin, Direction: rayDir}
+			ray := core.Ray{Origin: origin, Direction: rayDir}
 
-			pixel := calculatePixel(&ray)
-
-			image.WritePixel(i, j, &pixel)
+			image.WritePixel(i, j, calculatePixel(ray))
 		}
 	}
 
-	fmt.Fprintln(f, image)
+	image.SaveToFile(f)
 }
