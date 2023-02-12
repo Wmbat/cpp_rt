@@ -23,7 +23,7 @@ func (this Image) WritePixel(x int64, y int64, pixel Pixel) {
 	this.Pixels[index].AddSamplePixel(pixel)
 }
 
-func (this Image) SaveToFile(file *os.File) {
+func (this Image) SaveAsPPM(file *os.File) {
 	file.WriteString(fmt.Sprintf("P3\n%d %d\n255\n", this.Width, this.Height))
 	for y := this.Height - 1; y >= 0; y-- {
 		for x := int64(0); x < this.Width; x++ {

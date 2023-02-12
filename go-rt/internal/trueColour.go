@@ -3,9 +3,9 @@ package core
 import "fmt"
 
 type TrueColour struct {
-	Red uint32
-	Green uint32
-	Blue uint32
+	Red uint8
+	Green uint8
+	Blue uint8
 }
 
 func (this TrueColour) String() string {

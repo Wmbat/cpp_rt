@@ -53,8 +53,10 @@ func (lhs Colour) Scale(scalar float64) Colour {
 }
 
 func (this Colour) ToTrueColour() TrueColour {
+	rawColour := this.Scale(256.0)
+
 	return TrueColour{
-		Red: uint32(this.Red * 256.0),
-		Green: uint32(this.Green * 256.0),
-		Blue: uint32(this.Blue * 256.0)}
+		Red: uint8(rawColour.Red),
+		Green: uint8(rawColour.Green),
+		Blue: uint8(rawColour.Blue)}
 }

@@ -31,11 +31,11 @@ func main() {
 		os.Remove(imageFile)
 	}
 
-	f, err := os.Create("image.ppm")
+	outputFile, err := os.Create("image.ppm")
 	if err != nil {
 		fmt.Println("Failed to open file:", err)
 	}
-	defer f.Close()
+	defer outputFile.Close()
 
 	image := core.NewImage(imageWidth, imageHeight)
 
@@ -70,5 +70,5 @@ func main() {
 		}
 	}
 
-	image.SaveToFile(f)
+	image.SaveAsPPM(outputFile)
 }
