@@ -1,4 +1,4 @@
-package core
+package rt
 
 import "github.com/wmbat/ray_tracer/internal/maths"
 

@@ -6,5 +6,5 @@ import (
 )
 
 type Hitable interface {
-	DoesIntersectWith(ray core.Ray, timeBound TimeBoundaries) mo.Option[HitRecord]
+	DoesIntersectWith(ray rt.Ray, timeBound rt.TimeBoundaries) mo.Option[HitRecord]
 }

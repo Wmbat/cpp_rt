@@ -13,7 +13,7 @@ type Sphere struct {
 	Radius float64
 }
 
-func (this Sphere) DoesIntersectWith(ray core.Ray, timeBounds TimeBoundaries) mo.Option[HitRecord] {
+func (this Sphere) DoesIntersectWith(ray rt.Ray, timeBounds rt.TimeBoundaries) mo.Option[HitRecord] {
 	oc := ray.Origin.Sub(this.Origin).ToVec3()
 
 	quadEquation := maths.QuadraticEquation{
@@ -49,7 +49,7 @@ func (this Sphere) DoesIntersectWith(ray core.Ray, timeBounds TimeBoundaries) mo
 	}
 }
 
-func findNearestIntersectTime(quadEq maths.QuadraticEquation, timeBounds TimeBoundaries) mo.Option[float64] {
+func findNearestIntersectTime(quadEq maths.QuadraticEquation, timeBounds rt.TimeBoundaries) mo.Option[float64] {
 	sqrtD := math.Sqrt(quadEq.ComputeDiscriminant())
 
 	intersectTimeOne := (-quadEq.HalfB - sqrtD) / quadEq.A

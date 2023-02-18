@@ -1,4 +1,4 @@
-package hitable
+package rt
 
 type TimeBoundaries struct {
 	Min float64
