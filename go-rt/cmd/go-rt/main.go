@@ -5,9 +5,11 @@ import (
 	"math"
 	"os"
 
-	rt "github.com/wmbat/ray_tracer/internal"
+	"github.com/wmbat/ray_tracer/internal/core"
 	"github.com/wmbat/ray_tracer/internal/hitable"
 	"github.com/wmbat/ray_tracer/internal/maths"
+	"github.com/wmbat/ray_tracer/internal/render"
+	"github.com/wmbat/ray_tracer/internal/scene"
 	"github.com/wmbat/ray_tracer/internal/utils"
 )
 
@@ -15,26 +17,26 @@ const imageWidth int64 = 1280
 const imageHeight int64 = 720
 const aspectRatio float64 = float64(imageWidth) / float64(imageHeight)
 
-func calculateSkyColour(ray rt.Ray) rt.Colour {
+func calculateSkyColour(ray core.Ray) render.Colour {
 	t := 0.5 * (ray.Direction.Normalize().Y + 1.0)
 
-	white := rt.Colour{Red: 1.0, Green: 1.0, Blue: 1.0}
-	gradient := rt.Colour{Red: 0.5, Green: 0.7, Blue: 1.0}
+	white := render.Colour{Red: 1.0, Green: 1.0, Blue: 1.0}
+	gradient := render.Colour{Red: 0.5, Green: 0.7, Blue: 1.0}
 
 	return white.Scale(1.0 - t).Add(gradient.Scale(t))
 }
 
-func calculatePixelRadience(ray rt.Ray, hitables []hitable.Hitable, timeBounds rt.TimeBoundaries) rt.Pixel {
+func calculatePixelRadience(ray core.Ray, hitables []hitable.Hitable, timeBounds utils.TimeBoundaries) render.Pixel {
 	for _, hitable := range hitables {
 		record, isPresent := hitable.DoesIntersectWith(ray, timeBounds).Get()
 
 		if isPresent {
 			rawColour := record.Normal.Add(maths.Vec3{X: 1, Y: 1, Z: 1}).Scale(0.5)
-			return rt.Pixel{Colour: rt.ColourFromVec3(rawColour), SampleCount: 1}
+			return render.Pixel{Colour: render.ColourFromVec3(rawColour), SampleCount: 1}
 		}
 	}
 
-	return rt.Pixel{Colour: calculateSkyColour(ray), SampleCount: 1}
+	return render.Pixel{Colour: calculateSkyColour(ray), SampleCount: 1}
 }
 
 func main() {
@@ -50,16 +52,16 @@ func main() {
 	}
 	defer outputFile.Close()
 
-	image := rt.NewImage(imageWidth, imageHeight)
+	image := render.NewImage(imageWidth, imageHeight)
 
 	fmt.Printf("Creating an image of size <%d, %d>\n", image.Width, image.Height)
 
 	// Camera
 	viewport := maths.Size2{Width: aspectRatio * 2.0, Height: 2.0}
-	camera := rt.NewCamera(maths.Point3{X: 0, Y: 0, Z: 0}, viewport, 1.0)
+	camera := scene.NewCamera(maths.Point3{X: 0, Y: 0, Z: 0}, viewport, 1.0)
 
 	// Render
-	timeBounds := rt.TimeBoundaries{Min: 0, Max: math.Inf(1)}
+	timeBounds := utils.TimeBoundaries{Min: 0, Max: math.Inf(1)}
 
 	hitables := make([]hitable.Hitable, 0)
 	hitables = append(hitables, hitable.Sphere{Origin: maths.Point3{X: 0, Y: 0, Z: 1}, Radius: 0.5})

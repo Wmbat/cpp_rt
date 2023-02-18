@@ -1,4 +1,4 @@
-package rt
+package utils
 
 type TimeBoundaries struct {
 	Min float64

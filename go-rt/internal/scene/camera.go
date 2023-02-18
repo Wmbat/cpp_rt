@@ -1,6 +1,9 @@
-package rt
+package scene
 
-import "github.com/wmbat/ray_tracer/internal/maths"
+import (
+	"github.com/wmbat/ray_tracer/internal/core"
+	"github.com/wmbat/ray_tracer/internal/maths"
+)
 
 type Camera struct {
 	Origin          maths.Point3
@@ -28,14 +31,14 @@ func NewCamera(origin maths.Point3, viewport maths.Size2, focalLength float64) C
 		FocalLength:     focalLength}
 }
 
-func (this Camera) ShootRay(camTarget maths.Point2) Ray {
+func (this Camera) ShootRay(camTarget maths.Point2) core.Ray {
 	scaledHorizontal := this.Horizontal.Scale(camTarget.X)
 	scaledVertical := this.Vertical.Scale(camTarget.Y)
 
 	originVec := this.Origin.ToVec3()
 	cornerVec := this.LowerLeftCorner.ToVec3()
 
-	return Ray{
+	return core.Ray{
 		Origin:    this.Origin,
 		Direction: cornerVec.Add(scaledHorizontal).Add(scaledVertical).Sub(originVec)}
 }

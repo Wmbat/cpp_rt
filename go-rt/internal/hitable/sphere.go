@@ -4,8 +4,9 @@ import (
 	"math"
 
 	"github.com/samber/mo"
-	"github.com/wmbat/ray_tracer/internal"
+	"github.com/wmbat/ray_tracer/internal/core"
 	"github.com/wmbat/ray_tracer/internal/maths"
+	"github.com/wmbat/ray_tracer/internal/utils"
 )
 
 type Sphere struct {
@@ -13,7 +14,7 @@ type Sphere struct {
 	Radius float64
 }
 
-func (this Sphere) DoesIntersectWith(ray rt.Ray, timeBounds rt.TimeBoundaries) mo.Option[HitRecord] {
+func (this Sphere) DoesIntersectWith(ray core.Ray, timeBounds utils.TimeBoundaries) mo.Option[HitRecord] {
 	oc := ray.Origin.Sub(this.Origin).ToVec3()
 
 	quadEquation := maths.QuadraticFormula{
@@ -49,7 +50,7 @@ func (this Sphere) DoesIntersectWith(ray rt.Ray, timeBounds rt.TimeBoundaries) m
 	}
 }
 
-func findNearestIntersectTime(quadEq maths.QuadraticFormula, timeBounds rt.TimeBoundaries) mo.Option[float64] {
+func findNearestIntersectTime(quadEq maths.QuadraticFormula, timeBounds utils.TimeBoundaries) mo.Option[float64] {
 	sqrtD := math.Sqrt(quadEq.ComputeDiscriminant())
 
 	intersectTimeOne := (-quadEq.HalfB - sqrtD) / quadEq.A
