@@ -5,13 +5,13 @@ import (
 	"math"
 	"os"
 
-	"github.com/wmbat/ray_tracer/internal"
+	rt "github.com/wmbat/ray_tracer/internal"
 	"github.com/wmbat/ray_tracer/internal/hitable"
 	"github.com/wmbat/ray_tracer/internal/maths"
 	"github.com/wmbat/ray_tracer/internal/utils"
 )
 
-const imageWidth int64 = 1080
+const imageWidth int64 = 1280
 const imageHeight int64 = 720
 const aspectRatio float64 = float64(imageWidth) / float64(imageHeight)
 
@@ -55,22 +55,10 @@ func main() {
 	fmt.Printf("Creating an image of size <%d, %d>\n", image.Width, image.Height)
 
 	// Camera
-	viewportHeight := 2.0
-	viewportWidth := aspectRatio * viewportHeight
-	focalLength := 1.0
-
-	origin := maths.Point3{X: 0, Y: 0, Z: 0}
-	horizontal := maths.Vec3{X: viewportWidth, Y: 0, Z: 0}
-	vertical := maths.Vec3{X: 0, Y: viewportHeight, Z: 0}
-
-	horizontalMidpoint := horizontal.Scale(0.5).ToPoint3()
-	verticalMidpoint := vertical.Scale(0.5).ToPoint3()
-	depth := maths.Point3{X: 0, Y: 0, Z: focalLength}
-
-	lowerLeftCorner := origin.Sub(horizontalMidpoint).Sub(verticalMidpoint).Sub(depth)
+	viewport := maths.Size2{Width: aspectRatio * 2.0, Height: 2.0}
+	camera := rt.NewCamera(maths.Point3{X: 0, Y: 0, Z: 0}, viewport, 1.0)
 
 	// Render
-
 	timeBounds := rt.TimeBoundaries{Min: 0, Max: math.Inf(1)}
 
 	hitables := make([]hitable.Hitable, 0)
@@ -79,14 +67,11 @@ func main() {
 
 	for j := image.Height - 1; j >= 0; j-- {
 		for i := int64(0); i < image.Width; i++ {
-			u := float64(i) / float64(image.Width-1)
-			v := float64(j) / float64(image.Height-1)
+			camTarget := maths.Point2{
+				X: float64(i) / float64(image.Width-1),
+				Y: float64(j) / float64(image.Height-1)}
 
-			scaledHorizontal := horizontal.Scale(u)
-			scaledVertical := vertical.Scale(v)
-			rayDir := lowerLeftCorner.ToVec3().Add(scaledHorizontal).Add(scaledVertical).Sub(origin.ToVec3())
-
-			ray := rt.Ray{Origin: origin, Direction: rayDir}
+			ray := camera.ShootRay(camTarget)
 
 			image.WritePixel(i, j, calculatePixelRadience(ray, hitables, timeBounds))
 		}
