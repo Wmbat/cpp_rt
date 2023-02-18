@@ -1,26 +1,26 @@
-package scene
+package world
 
 import (
 	"fmt"
 	"math"
 	"math/rand"
 
-	"github.com/wmbat/ray_tracer/internal/core"
-	"github.com/wmbat/ray_tracer/internal/hitable"
 	"github.com/wmbat/ray_tracer/internal/maths"
 	"github.com/wmbat/ray_tracer/internal/render"
 	"github.com/wmbat/ray_tracer/internal/utils"
+	"github.com/wmbat/ray_tracer/internal/world/core"
+	"github.com/wmbat/ray_tracer/internal/world/entt"
 )
 
 type Scene struct {
 	Name string
 
-	hitables    []hitable.Hitable
+	hitables    []entt.Entity
 	environment render.Colour
 }
 
 func NewScene(name string) Scene {
-	return Scene{Name: name, hitables: make([]hitable.Hitable, 0)}
+	return Scene{Name: name, hitables: make([]entt.Entity, 0)}
 }
 
 func (this Scene) Render(cam Camera, config ImageRenderConfig) render.Image {
@@ -28,8 +28,8 @@ func (this Scene) Render(cam Camera, config ImageRenderConfig) render.Image {
 
 	image := render.NewImage(config.ImageSize)
 
-	tracker := utils.NewProgressTracker(uint32(config.SampleCount))
-	for sampleIndex := uint(0); sampleIndex < config.SampleCount; sampleIndex++ {
+	tracker := utils.NewProgressTracker(config.SampleCount)
+	for sampleIndex := uint32(0); sampleIndex < config.SampleCount; sampleIndex++ {
 		for j := image.Height - 1; j >= 0; j-- {
 			for i := int64(0); i < image.Width; i++ {
 				camTarget := maths.Point2{
@@ -48,33 +48,33 @@ func (this Scene) Render(cam Camera, config ImageRenderConfig) render.Image {
 	return image
 }
 
-func (this *Scene) AddHitable(hitable hitable.Hitable) {
-	this.hitables = append(this.hitables, hitable)
+func (this *Scene) AddEntity(entity entt.Entity) {
+	this.hitables = append(this.hitables, entity)
 }
 
-func (this *Scene) AddHitables(hitables []hitable.Hitable) {
-	this.hitables = append(this.hitables, hitables...)
+func (this *Scene) AddEntities(entities []entt.Entity) {
+	this.hitables = append(this.hitables, entities...)
 }
 
 func (this *Scene) SetEnvironmentColour(colour render.Colour) {
 	this.environment = colour
 }
 
-func (this Scene) radiance(ray core.Ray, hitables []hitable.Hitable, BounceDepth uint) render.Colour {
+func (this Scene) radiance(ray core.Ray, entities []entt.Entity, BounceDepth uint32) render.Colour {
 	if BounceDepth == 0 {
 		return render.Colour{Red: 0.0, Green: 0.0, Blue: 0.0}
 	}
 
 	timeBounds := utils.TimeBoundaries{Min: 0.001, Max: math.Inf(1)}
 
-	for _, hitable := range hitables {
-		record, isPresent := hitable.DoesIntersectWith(ray, timeBounds).Get()
+	for _, entity := range entities {
+		record, isPresent := entity.IsIntersectedByRay(ray, timeBounds).Get()
 
 		if isPresent {
 			locationVec := record.Location.ToVec3()
-			target := locationVec.Add(record.Normal).Add(maths.RandVec3InUnitSphere().Normalize())
+			target := locationVec.Add(maths.RandVec3InHemisphere(record.Normal))
 			newRay := core.Ray{Origin: record.Location, Direction: target.Sub(record.Location.ToVec3())}
-			return this.radiance(newRay, hitables, BounceDepth-1).Scale(0.5)
+			return this.radiance(newRay, entities, BounceDepth-1).Scale(0.5)
 		}
 	}
 

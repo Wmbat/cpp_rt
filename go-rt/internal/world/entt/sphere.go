@@ -1,12 +1,12 @@
-package hitable
+package entt
 
 import (
 	"math"
 
 	"github.com/samber/mo"
-	"github.com/wmbat/ray_tracer/internal/core"
 	"github.com/wmbat/ray_tracer/internal/maths"
 	"github.com/wmbat/ray_tracer/internal/utils"
+	"github.com/wmbat/ray_tracer/internal/world/core"
 )
 
 type Sphere struct {
@@ -14,7 +14,7 @@ type Sphere struct {
 	Radius float64
 }
 
-func (this Sphere) DoesIntersectWith(ray core.Ray, timeBounds utils.TimeBoundaries) mo.Option[HitRecord] {
+func (this Sphere) IsIntersectedByRay(ray core.Ray, timeBounds utils.TimeBoundaries) mo.Option[core.RayCollisionPoint] {
 	oc := ray.Origin.Sub(this.Origin).ToVec3()
 
 	quadEquation := maths.QuadraticFormula{
@@ -24,25 +24,25 @@ func (this Sphere) DoesIntersectWith(ray core.Ray, timeBounds utils.TimeBoundari
 
 	discriminant := quadEquation.ComputeDiscriminant()
 	if discriminant < 0 {
-		return mo.None[HitRecord]()
+		return mo.None[core.RayCollisionPoint]()
 	}
 
 	time, isPresent := findNearestIntersectTime(quadEquation, timeBounds).Get()
 	if !isPresent {
-		return mo.None[HitRecord]()
+		return mo.None[core.RayCollisionPoint]()
 	}
 
 	location := ray.At(time)
 	normal := location.Sub(this.Origin).Scale(1 / this.Radius).ToVec3()
 
 	if maths.DotProduct(ray.Direction, normal) > 0.0 {
-		return mo.Some(HitRecord{
+		return mo.Some(core.RayCollisionPoint{
 			Location:  location,
 			Normal:    normal,
 			Time:      time,
 			FrontFace: true})
 	} else {
-		return mo.Some(HitRecord{
+		return mo.Some(core.RayCollisionPoint{
 			Location:  location,
 			Normal:    normal.Negate(),
 			Time:      time,

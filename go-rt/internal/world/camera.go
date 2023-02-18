@@ -1,8 +1,8 @@
-package scene
+package world
 
 import (
-	"github.com/wmbat/ray_tracer/internal/core"
 	"github.com/wmbat/ray_tracer/internal/maths"
+	"github.com/wmbat/ray_tracer/internal/world/core"
 )
 
 type Camera struct {
