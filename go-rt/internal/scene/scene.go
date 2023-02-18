@@ -3,6 +3,7 @@ package scene
 import (
 	"fmt"
 	"math"
+	"math/rand"
 
 	"github.com/wmbat/ray_tracer/internal/core"
 	"github.com/wmbat/ray_tracer/internal/hitable"
@@ -14,7 +15,7 @@ import (
 type Scene struct {
 	Name string
 
-	hitables []hitable.Hitable
+	hitables    []hitable.Hitable
 	environment render.Colour
 }
 
@@ -30,13 +31,15 @@ func (this Scene) Render(cam Camera, config ImageRenderConfig) render.Image {
 
 	for j := image.Height - 1; j >= 0; j-- {
 		for i := int64(0); i < image.Width; i++ {
-			camTarget := maths.Point2{
-				X: float64(i) / float64(image.Width-1),
-				Y: float64(j) / float64(image.Height-1)}
+			for sampleIndex := 0; sampleIndex < config.SampleCount; sampleIndex++ {
+				camTarget := maths.Point2{
+					X: (float64(i) + rand.Float64()) / float64(image.Width-1),
+					Y: (float64(j) + rand.Float64()) / float64(image.Height-1)}
 
-			ray := cam.ShootRay(camTarget)
+				ray := cam.ShootRay(camTarget)
 
-			image.AddSample(i, j, this.radiance(ray, this.hitables, timeBounds))
+				image.AddSample(i, j, this.radiance(ray, this.hitables, timeBounds))
+			}
 		}
 	}
 

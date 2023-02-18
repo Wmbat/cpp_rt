@@ -24,6 +24,7 @@ func main() {
 
 	image := mainScene.Render(camera, scene.ImageRenderConfig{
 		ImageSize: maths.Size2i{Width: imageWidth, Height: imageHeight},
+		SampleCount: 32,
 	})
 
 	image.SaveAsPPM(sceneName)
