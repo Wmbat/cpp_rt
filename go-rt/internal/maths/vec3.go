@@ -70,6 +70,10 @@ func (vec Vec3) Normalize() Vec3 {
 	return vec.Scale(1 / vec.Length())
 }
 
+func (vec Vec3) Negate() Vec3 {
+	return vec.Scale(-1.0)
+}
+
 func DotProduct(lhs Vec3, rhs Vec3) float64 {
 	x := lhs.X * rhs.X
 	y := lhs.Y * rhs.Y

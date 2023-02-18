@@ -2,26 +2,39 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"os"
 
-	core "github.com/wmbat/ray_tracer/internal"
+	"github.com/wmbat/ray_tracer/internal"
+	"github.com/wmbat/ray_tracer/internal/hitable"
 	"github.com/wmbat/ray_tracer/internal/maths"
 	"github.com/wmbat/ray_tracer/internal/utils"
 )
 
-const imageWidth int64 = 720
-const imageHeight int64 = 480
+const imageWidth int64 = 1080
+const imageHeight int64 = 720
 const aspectRatio float64 = float64(imageWidth) / float64(imageHeight)
 
-func calculatePixel(ray core.Ray) core.Pixel {
+func calculateSkyColour(ray core.Ray) core.Colour {
 	t := 0.5 * (ray.Direction.Normalize().Y + 1.0)
 
 	white := core.Colour{Red: 1.0, Green: 1.0, Blue: 1.0}
 	gradient := core.Colour{Red: 0.5, Green: 0.7, Blue: 1.0}
 
-	blendedColour := white.Scale(1.0 - t).Add(gradient.Scale(t))
+	return white.Scale(1.0 - t).Add(gradient.Scale(t))
+}
 
-	return core.Pixel{Colour: blendedColour, SampleCount: 1}
+func calculatePixel(ray core.Ray, hitables []hitable.Hitable, timeBounds hitable.TimeBoundaries) core.Pixel {
+	for _, hitable := range hitables {
+		record, isPresent := hitable.DoesIntersectWith(ray, timeBounds).Get()
+
+		if isPresent {
+			rawColour := record.Normal.Add(maths.Vec3{X: 1, Y: 1, Z: 1}).Scale(0.5)
+			return core.Pixel{Colour: core.ColourFromVec3(rawColour), SampleCount: 1}
+		}
+	}
+
+	return core.Pixel{Colour: calculateSkyColour(ray), SampleCount: 1}
 }
 
 func main() {
@@ -41,6 +54,7 @@ func main() {
 
 	fmt.Printf("Creating an image of size <%d, %d>\n", image.Width, image.Height)
 
+	// Camera
 	viewportHeight := 2.0
 	viewportWidth := aspectRatio * viewportHeight
 	focalLength := 1.0
@@ -49,11 +63,19 @@ func main() {
 	horizontal := maths.Vec3{X: viewportWidth, Y: 0, Z: 0}
 	vertical := maths.Vec3{X: 0, Y: viewportHeight, Z: 0}
 
-	horizontalMidpoint := horizontal.Scale(1 / 2).ToPoint3()
-	verticalMidpoint := vertical.Scale(1 / 2).ToPoint3()
+	horizontalMidpoint := horizontal.Scale(0.5).ToPoint3()
+	verticalMidpoint := vertical.Scale(0.5).ToPoint3()
 	depth := maths.Point3{X: 0, Y: 0, Z: focalLength}
 
 	lowerLeftCorner := origin.Sub(horizontalMidpoint).Sub(verticalMidpoint).Sub(depth)
+
+	// Render
+
+	timeBounds := hitable.TimeBoundaries{Min: 0, Max: math.Inf(1)}
+
+	hitables := make([]hitable.Hitable, 0)
+	hitables = append(hitables, hitable.Sphere{Origin: maths.Point3{X: 0, Y: 0, Z: 1}, Radius: 0.5})
+	hitables = append(hitables, hitable.Sphere{Origin: maths.Point3{X: 0, Y: -100.5, Z: 1}, Radius: 100})
 
 	for j := image.Height - 1; j >= 0; j-- {
 		for i := int64(0); i < image.Width; i++ {
@@ -62,11 +84,11 @@ func main() {
 
 			scaledHorizontal := horizontal.Scale(u)
 			scaledVertical := vertical.Scale(v)
-			rayDir := lowerLeftCorner.Sub(origin).ToVec3().Add(scaledHorizontal).Add(scaledVertical)
+			rayDir := lowerLeftCorner.ToVec3().Add(scaledHorizontal).Add(scaledVertical).Sub(origin.ToVec3())
 
 			ray := core.Ray{Origin: origin, Direction: rayDir}
 
-			image.WritePixel(i, j, calculatePixel(ray))
+			image.WritePixel(i, j, calculatePixel(ray, hitables, timeBounds))
 		}
 	}
 
