@@ -9,6 +9,11 @@ type Pixel struct {
 	SampleCount uint64
 }
 
+func (this *Pixel) AddSample(colour Colour) {
+    this.Colour = this.Colour.Add(colour)
+    this.SampleCount += 1
+}
+
 func (this *Pixel) AddSamples(colour Colour, sampleCount uint64) {
     this.Colour = this.Colour.Add(colour)
     this.SampleCount += sampleCount
