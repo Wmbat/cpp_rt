@@ -72,14 +72,14 @@ func (vec Vec3) Negate() Vec3 {
 	return vec.Scale(-1.0)
 }
 
-func RandomVec3() Vec3 {
+func RandVec3() Vec3 {
 	return Vec3{
 		X: rand.Float64(), 
 		Y: rand.Float64(), 
 		Z: rand.Float64()}
 }
 
-func RandomVec3InRange(min, max float64) Vec3 {
+func RandVec3InRange(min, max float64) Vec3 {
 
 	return Vec3{
 		X: min + rand.Float64() * (max - min), 
@@ -88,9 +88,9 @@ func RandomVec3InRange(min, max float64) Vec3 {
 }
 
 
-func RandomVec3InUnitSphere() Vec3 {
+func RandVec3InUnitSphere() Vec3 {
 	for {
-		vec := RandomVec3InRange(-1, 1)
+		vec := RandVec3InRange(-1, 1)
 		if vec.LengthSquared() >= 1 {
 			continue;
 		}

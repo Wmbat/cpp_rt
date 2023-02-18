@@ -8,7 +8,7 @@ import (
 )
 
 const aspectRatio float64 = 16.0 / 9.0
-const imageWidth int64 = 400
+const imageWidth int64 = 720
 const imageHeight int64 = int64((float64(imageWidth) / aspectRatio))
 
 func main() {
