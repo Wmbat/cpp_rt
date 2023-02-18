@@ -1,6 +1,8 @@
 package render
 
 import (
+	"math"
+
 	"github.com/wmbat/ray_tracer/internal/maths"
 )
 
@@ -33,7 +35,7 @@ func (this Pixel) GetSampledColour() Colour {
 	sampleColour := this.colour.Scale(1.0 / float64(this.sampleCount))
 
 	return Colour{
-		Red: maths.Clamp(sampleColour.Red, 0, 0.999),
-		Green: maths.Clamp(sampleColour.Green, 0, 0.999),
-		Blue: maths.Clamp(sampleColour.Blue, 0, 0.999)}
+		Red: maths.Clamp(math.Sqrt(sampleColour.Red), 0, 0.999),
+		Green: maths.Clamp(math.Sqrt(sampleColour.Green), 0, 0.999),
+		Blue: maths.Clamp(math.Sqrt(sampleColour.Blue), 0, 0.999)}
 }

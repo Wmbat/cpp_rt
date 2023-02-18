@@ -26,19 +26,18 @@ func NewScene(name string) Scene {
 func (this Scene) Render(cam Camera, config ImageRenderConfig) render.Image {
 	fmt.Printf("Start render of scene \"%s\"\n", this.Name)
 
-	timeBounds := utils.TimeBoundaries{Min: 0, Max: math.Inf(1)}
 	image := render.NewImage(config.ImageSize)
 
 	for j := image.Height - 1; j >= 0; j-- {
 		for i := int64(0); i < image.Width; i++ {
-			for sampleIndex := 0; sampleIndex < config.SampleCount; sampleIndex++ {
+			for sampleIndex := uint(0); sampleIndex < config.SampleCount; sampleIndex++ {
 				camTarget := maths.Point2{
 					X: (float64(i) + rand.Float64()) / float64(image.Width-1),
 					Y: (float64(j) + rand.Float64()) / float64(image.Height-1)}
 
 				ray := cam.ShootRay(camTarget)
 
-				image.AddSample(i, j, this.radiance(ray, this.hitables, timeBounds))
+				image.AddSample(i, j, this.radiance(ray, this.hitables, int(config.BounceDepth)))
 			}
 		}
 	}
@@ -58,13 +57,21 @@ func (this *Scene) SetEnvironmentColour(colour render.Colour) {
 	this.environment = colour
 }
 
-func (this Scene) radiance(ray core.Ray, hitables []hitable.Hitable, timeBounds utils.TimeBoundaries) render.Colour {
+func (this Scene) radiance(ray core.Ray, hitables []hitable.Hitable, BounceDepth int) render.Colour {
+	if BounceDepth <= 0 {
+		return render.Colour{Red: 0.0, Green: 0.0, Blue: 0.0}
+	}
+
+	timeBounds := utils.TimeBoundaries{Min: 0.001, Max: math.Inf(1)}
+
 	for _, hitable := range hitables {
 		record, isPresent := hitable.DoesIntersectWith(ray, timeBounds).Get()
 
 		if isPresent {
-			rawColour := record.Normal.Add(maths.Vec3{X: 1, Y: 1, Z: 1}).Scale(0.5)
-			return render.ColourFromVec3(rawColour)
+			locationVec := record.Location.ToVec3()
+			target := locationVec.Add(record.Normal).Add(maths.RandomVec3InUnitSphere())
+			newRay := core.Ray{Origin: record.Location, Direction: target.Sub(record.Location.ToVec3())}
+			return this.radiance(newRay, hitables, BounceDepth-1).Scale(0.5)
 		}
 	}
 

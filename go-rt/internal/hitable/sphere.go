@@ -38,15 +38,15 @@ func (this Sphere) DoesIntersectWith(ray core.Ray, timeBounds utils.TimeBoundari
 	if maths.DotProduct(ray.Direction, normal) > 0.0 {
 		return mo.Some(HitRecord{
 			Location:  location,
-			Normal:    normal.Negate(),
-			Time:      time,
-			FrontFace: false})
-	} else {
-		return mo.Some(HitRecord{
-			Location:  location,
 			Normal:    normal,
 			Time:      time,
 			FrontFace: true})
+	} else {
+		return mo.Some(HitRecord{
+			Location:  location,
+			Normal:    normal.Negate(),
+			Time:      time,
+			FrontFace: false})
 	}
 }
 

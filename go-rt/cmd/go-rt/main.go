@@ -7,9 +7,9 @@ import (
 	"github.com/wmbat/ray_tracer/internal/scene"
 )
 
-const imageWidth int64 = 1280
-const imageHeight int64 = 720
-const aspectRatio float64 = float64(imageWidth) / float64(imageHeight)
+const aspectRatio float64 = 16.0 / 9.0
+const imageWidth int64 = 400
+const imageHeight int64 = int64((float64(imageWidth) / aspectRatio))
 
 func main() {
 	viewport := maths.Size2f{Width: aspectRatio * 2.0, Height: 2.0}
@@ -24,7 +24,8 @@ func main() {
 
 	image := mainScene.Render(camera, scene.ImageRenderConfig{
 		ImageSize: maths.Size2i{Width: imageWidth, Height: imageHeight},
-		SampleCount: 32,
+		SampleCount: 100,
+		BounceDepth: 50,
 	})
 
 	image.SaveAsPPM(sceneName)

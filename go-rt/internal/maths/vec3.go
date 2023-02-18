@@ -3,11 +3,9 @@ package maths
 import (
 	"fmt"
 	"math"
+	"math/rand"
 )
 
-/*
- *
- */
 type Vec3 struct {
 	X float64
 	Y float64
@@ -74,7 +72,33 @@ func (vec Vec3) Negate() Vec3 {
 	return vec.Scale(-1.0)
 }
 
-func DotProduct(lhs Vec3, rhs Vec3) float64 {
+func RandomVec3() Vec3 {
+	return Vec3{
+		X: rand.Float64(), 
+		Y: rand.Float64(), 
+		Z: rand.Float64()}
+}
+
+func RandomVec3InRange(min, max float64) Vec3 {
+
+	return Vec3{
+		X: min + rand.Float64() * (max - min), 
+		Y: min + rand.Float64() * (max - min), 
+		Z: min + rand.Float64() * (max - min)}
+}
+
+
+func RandomVec3InUnitSphere() Vec3 {
+	for {
+		vec := RandomVec3InRange(-1, 1)
+		if vec.LengthSquared() >= 1 {
+			continue;
+		}
+		return vec;
+	}
+}
+
+func DotProduct(lhs, rhs Vec3) float64 {
 	x := lhs.X * rhs.X
 	y := lhs.Y * rhs.Y
 	z := lhs.Z * rhs.Z
@@ -82,7 +106,7 @@ func DotProduct(lhs Vec3, rhs Vec3) float64 {
 	return x + y + z
 }
 
-func CrossProduct(lhs Vec3, rhs Vec3) Vec3 {
+func CrossProduct(lhs, rhs Vec3) Vec3 {
 	x := (lhs.Y * rhs.Z) - (lhs.Z * rhs.Y)
 	y := (lhs.Z * rhs.X) - (lhs.X * rhs.Z)
 	z := (lhs.X * rhs.Y) - (lhs.Y * rhs.X)
