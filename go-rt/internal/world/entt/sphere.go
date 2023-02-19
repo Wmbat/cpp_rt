@@ -3,24 +3,25 @@ package entt
 import (
 	"math"
 
-	"github.com/samber/mo"
 	"github.com/wmbat/ray_tracer/internal/maths"
 	"github.com/wmbat/ray_tracer/internal/world/core"
+	"github.com/wmbat/ray_tracer/internal/world/mats"
 )
 
 type Sphere struct {
-	Origin maths.Point3
-	Radius float64
+	Position maths.Point3 // The position fo the sphere in the world
+	Radius   float64      // The radius of the sphere
+	Material mats.Material
 }
 
-func (this Sphere) IsIntersectedByRay(ray core.Ray, closerThan float64) mo.Option[core.RayCollisionPoint] {
+func (this Sphere) IsIntersectedByRay(ray core.Ray, closerThan float64) (IntersectRecord, bool) {
 	const epsilon float64 = 0.001
 
 	a, b, c := this.GetQuadraticFactor(ray)
 
 	discriminant := (b * b) - (a * c)
 	if discriminant < 0 {
-		return mo.None[core.RayCollisionPoint]()
+		return IntersectRecord{}, false
 	}
 
 	determinant := math.Sqrt(discriminant)
@@ -29,23 +30,26 @@ func (this Sphere) IsIntersectedByRay(ray core.Ray, closerThan float64) mo.Optio
 	if distance < epsilon || closerThan < distance {
 		distance = (-b + determinant) / a
 		if distance < epsilon || closerThan < distance {
-			return mo.None[core.RayCollisionPoint]()
+			return IntersectRecord{}, false
 		}
 	}
 
 	location := ray.At(distance)
-	normal := location.Sub(this.Origin).Scale(1 / this.Radius).ToVec3()
-	isFrontFace := maths.DotProduct(ray.Direction, normal) > 0.0
+	normal := location.Sub(this.Position).Scale(1 / this.Radius).ToVec3()
+	isFrontFace := maths.DotProduct(ray.Direction, normal) < 0.0
 
-	return mo.Some(core.RayCollisionPoint{
-		Location:    location,
+	record := IntersectRecord{
+		Position:    location,
 		Normal:      GetFrontFaceNormal(normal, isFrontFace),
 		Distance:    distance,
-		IsFrontFace: isFrontFace})
+		IsFrontFace: isFrontFace,
+		Material:    &this.Material}
+
+	return record, true
 }
 
 func (this Sphere) GetQuadraticFactor(ray core.Ray) (float64, float64, float64) {
-	oc := ray.Origin.Sub(this.Origin).ToVec3()
+	oc := ray.Origin.Sub(this.Position).ToVec3()
 
 	a := ray.Direction.LengthSquared()
 	b := maths.DotProduct(oc, ray.Direction)

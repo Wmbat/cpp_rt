@@ -71,6 +71,18 @@ func (vec Vec3) Negate() Vec3 {
 	return vec.Scale(-1.0)
 }
 
+func (this Vec3) IsNearZero() bool {
+	const e float64 = 1e-8
+	return (math.Abs(this.X) < e) && (math.Abs(this.Y) < e) && (math.Abs(this.Z) < e)
+}
+
+func (incident Vec3) Reflect(normal Vec3) Vec3 {
+	dot := 2 * DotProduct(incident, normal)
+	reflected := incident.Sub(normal.Scale(dot))
+
+	return reflected.Negate()
+}
+
 func DotProduct(lhs, rhs Vec3) float64 {
 	x := lhs.X * rhs.X
 	y := lhs.Y * rhs.Y

@@ -10,6 +10,7 @@ import (
 	"github.com/wmbat/ray_tracer/internal/utils"
 	"github.com/wmbat/ray_tracer/internal/world/core"
 	"github.com/wmbat/ray_tracer/internal/world/entt"
+	"github.com/wmbat/ray_tracer/internal/world/mats"
 )
 
 type Scene struct {
@@ -61,22 +62,41 @@ func (this *Scene) SetEnvironmentColour(colour render.Colour) {
 }
 
 func (this Scene) radiance(ray core.Ray, entities []entt.Entity, BounceDepth uint32) render.Colour {
+	black := render.Colour{Red: 0.0, Green: 0.0, Blue: 0.0}
+
 	if BounceDepth == 0 {
-		return render.Colour{Red: 0.0, Green: 0.0, Blue: 0.0}
+		return black
 	}
 
-	maxDistance := math.Inf(1)
-
-	for _, entity := range entities {
-		record, isPresent := entity.IsIntersectedByRay(ray, maxDistance).Get()
-
-		if isPresent {
-			locationVec := record.Location.ToVec3()
-			target := locationVec.Add(maths.RandVec3InHemisphere(record.Normal))
-			newRay := core.Ray{Origin: record.Location, Direction: target.Sub(record.Location.ToVec3())}
-			return this.radiance(newRay, entities, BounceDepth-1).Scale(0.5)
+	intersect, isIntersected := findNearestIntersectRecord(ray, entities)
+	if isIntersected {
+		scatterInfo := mats.SurfaceInfo{Position: intersect.Position, Normal: intersect.Normal}
+		scatter, isScattered := (*intersect.Material).Scatter(ray, scatterInfo)
+		if isScattered {
+			return scatter.Attenuation.Mult(this.radiance(scatter.Ray, entities, BounceDepth-1))
+		} else {
+			return black
 		}
 	}
 
 	return this.environment
+}
+
+func findNearestIntersectRecord(ray core.Ray, entities []entt.Entity) (entt.IntersectRecord, bool) {
+	var nearestRecord *entt.IntersectRecord = nil
+
+	nearestDistance := math.Inf(1)
+	for _, entity := range entities {
+		record, isPresent := entity.IsIntersectedByRay(ray, nearestDistance)
+		if isPresent {
+			nearestDistance = record.Distance
+			nearestRecord = &record
+		}
+	}
+
+	if nearestRecord == nil {
+		return entt.IntersectRecord{}, false
+	} else {
+		return *nearestRecord, true
+	}
 }
