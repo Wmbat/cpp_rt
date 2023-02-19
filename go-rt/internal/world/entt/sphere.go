@@ -15,19 +15,14 @@ type Sphere struct {
 }
 
 func (this Sphere) IsIntersectedByRay(ray core.Ray, timeBounds utils.TimeBoundaries) mo.Option[core.RayCollisionPoint] {
-	oc := ray.Origin.Sub(this.Origin).ToVec3()
+	a, b, c := this.GetQuadraticFactor(ray)
 
-	quadEquation := maths.QuadraticFormula{
-		A:     ray.Direction.LengthSquared(),
-		HalfB: maths.DotProduct(oc, ray.Direction),
-		C:     oc.LengthSquared() - (this.Radius * this.Radius)}
-
-	discriminant := quadEquation.ComputeDiscriminant()
+	discriminant := (b * b) - (a * c)
 	if discriminant < 0 {
 		return mo.None[core.RayCollisionPoint]()
 	}
 
-	time, isPresent := findNearestIntersectTime(quadEquation, timeBounds).Get()
+	time, isPresent := findNearestIntersectTime(a, b, discriminant, timeBounds).Get()
 	if !isPresent {
 		return mo.None[core.RayCollisionPoint]()
 	}
@@ -50,15 +45,25 @@ func (this Sphere) IsIntersectedByRay(ray core.Ray, timeBounds utils.TimeBoundar
 	}
 }
 
-func findNearestIntersectTime(quadEq maths.QuadraticFormula, timeBounds utils.TimeBoundaries) mo.Option[float64] {
-	sqrtD := math.Sqrt(quadEq.ComputeDiscriminant())
+func (this Sphere) GetQuadraticFactor(ray core.Ray) (float64, float64, float64) {
+	oc := ray.Origin.Sub(this.Origin).ToVec3()
 
-	intersectTimeOne := (-quadEq.HalfB - sqrtD) / quadEq.A
+	a := ray.Direction.LengthSquared()
+	b := maths.DotProduct(oc, ray.Direction)
+	c := oc.LengthSquared() - (this.Radius * this.Radius)
+
+	return a, b, c
+}
+
+func findNearestIntersectTime(a, b, discriminant float64, timeBounds utils.TimeBoundaries) mo.Option[float64] {
+	determinant := math.Sqrt(discriminant)
+
+	intersectTimeOne := (-b - determinant) / a
 	if timeBounds.IsTimeWithinBounds(intersectTimeOne) {
 		return mo.Some(intersectTimeOne)
 	}
 
-	intersectTimeTwo := (-quadEq.HalfB + sqrtD) / quadEq.A
+	intersectTimeTwo := (-b + determinant) / a
 	if timeBounds.IsTimeWithinBounds(intersectTimeTwo) {
 		return mo.Some(intersectTimeTwo)
 	}

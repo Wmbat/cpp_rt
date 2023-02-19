@@ -1,6 +1,11 @@
 package main
 
 import (
+	"flag"
+	"log"
+	"os"
+	"runtime/pprof"
+
 	"github.com/wmbat/ray_tracer/internal/maths"
 	"github.com/wmbat/ray_tracer/internal/render"
 	"github.com/wmbat/ray_tracer/internal/world"
@@ -11,7 +16,22 @@ const aspectRatio float64 = 16.0 / 9.0
 const imageWidth int64 = 720
 const imageHeight int64 = int64((float64(imageWidth) / aspectRatio))
 
+var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
+
 func main() {
+    flag.Parse()
+    if *cpuprofile != "" {
+        f, err := os.Create(*cpuprofile)
+        if err != nil {
+            log.Fatal("could not create CPU profile: ", err)
+        }
+        defer f.Close() // error handling omitted for example
+        if err := pprof.StartCPUProfile(f); err != nil {
+            log.Fatal("could not start CPU profile: ", err)
+        }
+        defer pprof.StopCPUProfile()
+    }
+
 	viewport := maths.Size2f{Width: aspectRatio * 2.0, Height: 2.0}
 	camera := world.NewCamera(maths.Point3{X: 0, Y: 0, Z: 0}, viewport, 1.0)
 
