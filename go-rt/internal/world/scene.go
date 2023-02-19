@@ -65,10 +65,10 @@ func (this Scene) radiance(ray core.Ray, entities []entt.Entity, BounceDepth uin
 		return render.Colour{Red: 0.0, Green: 0.0, Blue: 0.0}
 	}
 
-	timeBounds := utils.TimeBoundaries{Min: 0.001, Max: math.Inf(1)}
+	maxDistance := math.Inf(1)
 
 	for _, entity := range entities {
-		record, isPresent := entity.IsIntersectedByRay(ray, timeBounds).Get()
+		record, isPresent := entity.IsIntersectedByRay(ray, maxDistance).Get()
 
 		if isPresent {
 			locationVec := record.Location.ToVec3()

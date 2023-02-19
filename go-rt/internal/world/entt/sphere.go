@@ -5,7 +5,6 @@ import (
 
 	"github.com/samber/mo"
 	"github.com/wmbat/ray_tracer/internal/maths"
-	"github.com/wmbat/ray_tracer/internal/utils"
 	"github.com/wmbat/ray_tracer/internal/world/core"
 )
 
@@ -14,7 +13,7 @@ type Sphere struct {
 	Radius float64
 }
 
-func (this Sphere) IsIntersectedByRay(ray core.Ray, timeBounds utils.TimeBoundaries) mo.Option[core.RayCollisionPoint] {
+func (this Sphere) IsIntersectedByRay(ray core.Ray, nearestDistance float64) mo.Option[core.RayCollisionPoint] {
 	a, b, c := this.GetQuadraticFactor(ray)
 
 	discriminant := (b * b) - (a * c)
@@ -22,27 +21,20 @@ func (this Sphere) IsIntersectedByRay(ray core.Ray, timeBounds utils.TimeBoundar
 		return mo.None[core.RayCollisionPoint]()
 	}
 
-	time, isPresent := findNearestIntersectTime(a, b, discriminant, timeBounds).Get()
+	distance, isPresent := findNearestIntersectTime(a, b, discriminant, nearestDistance).Get()
 	if !isPresent {
 		return mo.None[core.RayCollisionPoint]()
 	}
 
-	location := ray.At(time)
+	location := ray.At(distance)
 	normal := location.Sub(this.Origin).Scale(1 / this.Radius).ToVec3()
+	isFontFace := maths.DotProduct(ray.Direction, normal) > 0.0
 
-	if maths.DotProduct(ray.Direction, normal) > 0.0 {
-		return mo.Some(core.RayCollisionPoint{
-			Location:  location,
-			Normal:    normal,
-			Time:      time,
-			FrontFace: true})
-	} else {
-		return mo.Some(core.RayCollisionPoint{
-			Location:  location,
-			Normal:    normal.Negate(),
-			Time:      time,
-			FrontFace: false})
-	}
+	return mo.Some(core.RayCollisionPoint{
+		Location:    location,
+		Normal:      GetFrontFaceNormal(normal, isFontFace),
+		Distance:    distance,
+		IsFrontFace: isFontFace})
 }
 
 func (this Sphere) GetQuadraticFactor(ray core.Ray) (float64, float64, float64) {
@@ -55,17 +47,25 @@ func (this Sphere) GetQuadraticFactor(ray core.Ray) (float64, float64, float64) 
 	return a, b, c
 }
 
-func findNearestIntersectTime(a, b, discriminant float64, timeBounds utils.TimeBoundaries) mo.Option[float64] {
+func GetFrontFaceNormal(normal maths.Vec3, isFrontFace bool) maths.Vec3 {
+	if isFrontFace {
+		return normal
+	} else {
+		return normal.Negate()
+	}
+}
+
+func findNearestIntersectTime(a, b, discriminant float64, nearestDistance float64) mo.Option[float64] {
 	determinant := math.Sqrt(discriminant)
 
-	intersectTimeOne := (-b - determinant) / a
-	if timeBounds.IsTimeWithinBounds(intersectTimeOne) {
-		return mo.Some(intersectTimeOne)
+	minT := (-b - determinant) / a
+	if 0.001 <= minT && minT <= nearestDistance {
+		return mo.Some(minT)
 	}
 
-	intersectTimeTwo := (-b + determinant) / a
-	if timeBounds.IsTimeWithinBounds(intersectTimeTwo) {
-		return mo.Some(intersectTimeTwo)
+	maxT := (-b + determinant) / a
+	if 0.001 <= maxT && maxT <= nearestDistance {
+		return mo.Some(maxT)
 	}
 
 	return mo.None[float64]()
