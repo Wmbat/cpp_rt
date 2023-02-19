@@ -6,5 +6,5 @@ import (
 )
 
 type Entity interface {
-	IsIntersectedByRay(ray core.Ray, nearestDistance float64) mo.Option[core.RayCollisionPoint]
+	IsIntersectedByRay(ray core.Ray, closerThan float64) mo.Option[core.RayCollisionPoint]
 }

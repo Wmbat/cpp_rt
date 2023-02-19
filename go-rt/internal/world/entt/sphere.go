@@ -13,7 +13,9 @@ type Sphere struct {
 	Radius float64
 }
 
-func (this Sphere) IsIntersectedByRay(ray core.Ray, nearestDistance float64) mo.Option[core.RayCollisionPoint] {
+func (this Sphere) IsIntersectedByRay(ray core.Ray, closerThan float64) mo.Option[core.RayCollisionPoint] {
+	const epsilon float64 = 0.001
+
 	a, b, c := this.GetQuadraticFactor(ray)
 
 	discriminant := (b * b) - (a * c)
@@ -21,20 +23,25 @@ func (this Sphere) IsIntersectedByRay(ray core.Ray, nearestDistance float64) mo.
 		return mo.None[core.RayCollisionPoint]()
 	}
 
-	distance, isPresent := findNearestIntersectTime(a, b, discriminant, nearestDistance).Get()
-	if !isPresent {
-		return mo.None[core.RayCollisionPoint]()
+	determinant := math.Sqrt(discriminant)
+
+	distance := (-b - determinant) / a
+	if distance < epsilon || closerThan < distance {
+		distance = (-b + determinant) / a
+		if distance < epsilon || closerThan < distance {
+			return mo.None[core.RayCollisionPoint]()
+		}
 	}
 
 	location := ray.At(distance)
 	normal := location.Sub(this.Origin).Scale(1 / this.Radius).ToVec3()
-	isFontFace := maths.DotProduct(ray.Direction, normal) > 0.0
+	isFrontFace := maths.DotProduct(ray.Direction, normal) > 0.0
 
 	return mo.Some(core.RayCollisionPoint{
 		Location:    location,
-		Normal:      GetFrontFaceNormal(normal, isFontFace),
+		Normal:      GetFrontFaceNormal(normal, isFrontFace),
 		Distance:    distance,
-		IsFrontFace: isFontFace})
+		IsFrontFace: isFrontFace})
 }
 
 func (this Sphere) GetQuadraticFactor(ray core.Ray) (float64, float64, float64) {
@@ -53,20 +60,4 @@ func GetFrontFaceNormal(normal maths.Vec3, isFrontFace bool) maths.Vec3 {
 	} else {
 		return normal.Negate()
 	}
-}
-
-func findNearestIntersectTime(a, b, discriminant float64, nearestDistance float64) mo.Option[float64] {
-	determinant := math.Sqrt(discriminant)
-
-	minT := (-b - determinant) / a
-	if 0.001 <= minT && minT <= nearestDistance {
-		return mo.Some(minT)
-	}
-
-	maxT := (-b + determinant) / a
-	if 0.001 <= maxT && maxT <= nearestDistance {
-		return mo.Some(maxT)
-	}
-
-	return mo.None[float64]()
 }
