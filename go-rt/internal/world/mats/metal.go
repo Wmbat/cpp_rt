@@ -7,13 +7,16 @@ import (
 )
 
 type Metal struct {
-	Albedo render.Colour
+	Albedo    render.Colour
+	Roughness float64
 }
 
 func (this Metal) Scatter(info ScatterInfo) (ScatterResult, bool) {
+	reflected := info.Ray.Direction.Normalize().Reflect(info.Normal)
+
 	outputRay := core.Ray{
-		Origin: info.Position, 
-		Direction: info.Ray.Direction.Normalize().Reflect(info.Normal)}
+		Origin:    info.Position,
+		Direction: reflected.Add(maths.RandVec3InUnitSphere(info.Rng).Scale(this.Roughness))}
 
 	isReflected := maths.DotProduct(outputRay.Direction, info.Normal) > 0
 

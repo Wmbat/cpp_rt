@@ -51,11 +51,15 @@ func main() {
 	mainScene.AddEntity(entt.Sphere{
 		Position: maths.Point3{X: -1, Y: 0, Z: 1},
 		Radius:   0.5,
-		Material: mats.Metal{Albedo: render.Colour{Red: 0.8, Green: 0.8, Blue: 0.8}}})
+		Material: mats.Metal{
+			Albedo: render.Colour{Red: 0.8, Green: 0.8, Blue: 0.8},
+			Roughness: 0.3}})
 	mainScene.AddEntity(entt.Sphere{
 		Position: maths.Point3{X: 1, Y: 0, Z: 1},
 		Radius:   0.5,
-		Material: mats.Metal{Albedo: render.Colour{Red: 0.8, Green: 0.6, Blue: 0.2}}})
+		Material: mats.Metal{
+			Albedo: render.Colour{Red: 0.8, Green: 0.6, Blue: 0.2},
+			Roughness: 1.0}})
 
 	image := mainScene.Render(camera, world.ImageRenderConfig{
 		ImageSize:   maths.Size2[int]{Width: imageWidth, Height: imageHeight},

@@ -83,6 +83,14 @@ func (incident Vec3) Reflect(normal Vec3) Vec3 {
 	return reflected.Negate()
 }
 
+func (incident Vec3) Refract(normal Vec3, iorRatio float64) Vec3 {
+	cosTheta := Min(DotProduct(incident.Negate(), normal), iorRatio)
+	perpendicular := incident.Add(normal.Scale(cosTheta)).Scale(iorRatio)
+	parallel := normal.Scale(-math.Sqrt(math.Abs(1.0 - perpendicular.LengthSquared())))
+
+	return perpendicular.Add(parallel)
+}
+
 func DotProduct(lhs, rhs Vec3) float64 {
 	x := lhs.X * rhs.X
 	y := lhs.Y * rhs.Y
