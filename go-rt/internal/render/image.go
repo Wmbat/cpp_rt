@@ -22,9 +22,23 @@ func NewImage(size maths.Size2i) Image {
 		Pixels: make([]Pixel, (size.Width * size.Height))}
 }
 
-func (this Image) AddSample(x int64, y int64, colour Colour) {
+func (this *Image) AddSample(x int64, y int64, colour Colour) {
 	index := x + (y * this.Width)
 	this.Pixels[index].AddSample(colour)
+}
+
+func (this *Image) AddSamplePixel(x, y int64, pixel Pixel) {
+	index := x + (y * this.Width)
+	this.Pixels[index].AddSamplePixel(pixel)
+}
+
+func (this *Image) AddSampleImage(rhs Image) {
+	for y := int64(0); y < this.Height; y++ {
+		for x := this.Width - 1; x >= 0; x-- {
+			index := x + (y * this.Width)
+			this.AddSamplePixel(x, y, rhs.Pixels[index])
+		}
+	}
 }
 
 func (this Image) SaveAsPPM(filename string) {

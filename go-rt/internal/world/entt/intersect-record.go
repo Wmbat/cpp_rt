@@ -10,5 +10,5 @@ type IntersectRecord struct {
 	Normal maths.Vec3
 	Distance float64
 	IsFrontFace bool
-	Material *mats.Material
+	Material mats.Material
 }

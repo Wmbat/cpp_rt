@@ -10,10 +10,10 @@ type Metal struct {
 	Albedo render.Colour
 }
 
-func (this Metal) Scatter(ray core.Ray, info SurfaceInfo) (ScatterResult, bool) {
+func (this Metal) Scatter(info ScatterInfo) (ScatterResult, bool) {
 	outputRay := core.Ray{
 		Origin: info.Position, 
-		Direction: ray.Direction.Normalize().Reflect(info.Normal)}
+		Direction: info.Ray.Direction.Normalize().Reflect(info.Normal)}
 
 	isReflected := maths.DotProduct(outputRay.Direction, info.Normal) > 0
 

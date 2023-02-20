@@ -1,25 +1,27 @@
 package maths
 
-import "math/rand"
+import (
+	"math/rand"
+)
 
-func RandVec3() Vec3 {
+func RandVec3(rng *rand.Rand) Vec3 {
 	return Vec3{
-		X: rand.Float64(),
-		Y: rand.Float64(),
-		Z: rand.Float64()}
+		X: rng.Float64(),
+		Y: rng.Float64(),
+		Z: rng.Float64()}
 }
 
-func RandVec3InRange(min, max float64) Vec3 {
+func RandVec3InRange(rng *rand.Rand, min, max float64) Vec3 {
 
 	return Vec3{
-		X: min + (rand.Float64() * (max - min)),
-		Y: min + (rand.Float64() * (max - min)),
-		Z: min + (rand.Float64() * (max - min))}
+		X: min + (rng.Float64() * (max - min)),
+		Y: min + (rng.Float64() * (max - min)),
+		Z: min + (rng.Float64() * (max - min))}
 }
 
-func RandVec3InUnitSphere() Vec3 {
+func RandVec3InUnitSphere(rng *rand.Rand) Vec3 {
 	for {
-		vec := RandVec3InRange(-1, 1)
+		vec := RandVec3InRange(rng, -1, 1)
 		if vec.LengthSquared() >= 1 {
 			continue
 		}
@@ -27,8 +29,8 @@ func RandVec3InUnitSphere() Vec3 {
 	}
 }
 
-func RandVec3InHemisphere(normal Vec3) Vec3 {
-	unitSphere := RandVec3InUnitSphere()
+func RandVec3InHemisphere(rng *rand.Rand, normal Vec3) Vec3 {
+	unitSphere := RandVec3InUnitSphere(rng)
 	if DotProduct(unitSphere, normal) > 0.0 {
 		return unitSphere
 	} else {

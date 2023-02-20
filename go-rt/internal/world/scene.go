@@ -1,9 +1,11 @@
 package world
 
 import (
-	"fmt"
+	"log"
 	"math"
 	"math/rand"
+	"runtime"
+	"time"
 
 	"github.com/wmbat/ray_tracer/internal/maths"
 	"github.com/wmbat/ray_tracer/internal/render"
@@ -20,33 +22,12 @@ type Scene struct {
 	environment render.Colour
 }
 
-func NewScene(name string) Scene {
-	return Scene{Name: name, hitables: make([]entt.Entity, 0)}
+type imageRenderInfo struct {
+	Tracker *utils.ProgressTracker
 }
 
-func (this Scene) Render(cam Camera, config ImageRenderConfig) render.Image {
-	fmt.Printf("Start render of scene \"%s\"\n", this.Name)
-
-	image := render.NewImage(config.ImageSize)
-
-	tracker := utils.NewProgressTracker(config.SampleCount)
-	for sampleIndex := uint32(0); sampleIndex < config.SampleCount; sampleIndex++ {
-		for j := image.Height - 1; j >= 0; j-- {
-			for i := int64(0); i < image.Width; i++ {
-				camTarget := maths.Point2{
-					X: (float64(i) + rand.Float64()) / float64(image.Width-1),
-					Y: (float64(j) + rand.Float64()) / float64(image.Height-1)}
-
-				ray := cam.ShootRay(camTarget)
-
-				image.AddSample(i, j, this.radiance(ray, this.hitables, config.BounceDepth))
-			}
-		}
-
-		tracker.IncrementProgress()
-	}
-
-	return image
+func NewScene(name string) Scene {
+	return Scene{Name: name, hitables: make([]entt.Entity, 0)}
 }
 
 func (this *Scene) AddEntity(entity entt.Entity) {
@@ -61,7 +42,72 @@ func (this *Scene) SetEnvironmentColour(colour render.Colour) {
 	this.environment = colour
 }
 
-func (this Scene) radiance(ray core.Ray, entities []entt.Entity, BounceDepth uint32) render.Colour {
+func (this Scene) Render(cam Camera, config ImageRenderConfig) render.Image {
+	log.Printf("[main] Start render of scene \"%s\"\n", this.Name)
+
+	goroutineCount := runtime.NumCPU()
+	batchCount := GetGoroutineBatchCount(goroutineCount, config.SampleCount)
+	leftoverSamples := config.SampleCount
+
+	workerPool := utils.NewWorkerPool(goroutineCount)
+	workerPool.Run()
+
+	resultChannel := make(chan render.Image, config.SampleCount)
+
+	tracker := utils.NewProgressTracker(config.SampleCount)
+	image := render.NewImage(config.ImageSize)
+	for batchIndex := 0; batchIndex < batchCount; batchIndex++ {
+		sampleCount := maths.Min(leftoverSamples, goroutineCount)
+
+		// Dispatch all the image render tasks
+		for index := 0; index < sampleCount; index++ {
+			workerPool.AddTask(func() {
+				resultChannel <- this.RenderImage(cam, config)
+			})
+		}
+
+		workerPool.Wait()
+
+		// Collect all the sample images
+		for index := 0; index < sampleCount; index++ {
+			image.AddSampleImage(<-resultChannel)
+		}
+
+		tracker.IncrementProgress(sampleCount)
+
+		leftoverSamples -= goroutineCount
+	}
+
+	close(resultChannel)
+	workerPool.Close()
+
+	log.Print("[main] Final image rendered")
+
+	return image
+}
+
+func (this Scene) RenderImage(cam Camera, config ImageRenderConfig) render.Image {
+	image := render.NewImage(config.ImageSize)
+
+	source := rand.NewSource(time.Now().UnixNano())
+	rng := rand.New(source)
+
+	for j := image.Height - 1; j >= 0; j-- {
+		for i := int64(0); i < image.Width; i++ {
+			camTarget := maths.Point2{
+				X: (float64(i) + rng.Float64()) / float64(image.Width-1),
+				Y: (float64(j) + rng.Float64()) / float64(image.Height-1)}
+
+			ray := cam.ShootRay(camTarget)
+
+			image.AddSample(i, j, this.radiance(ray, this.hitables, rng, config.BounceDepth))
+		}
+	}
+
+	return image
+}
+
+func (this Scene) radiance(ray core.Ray, entities []entt.Entity, rng *rand.Rand, BounceDepth int) render.Colour {
 	black := render.Colour{Red: 0.0, Green: 0.0, Blue: 0.0}
 
 	if BounceDepth == 0 {
@@ -70,10 +116,15 @@ func (this Scene) radiance(ray core.Ray, entities []entt.Entity, BounceDepth uin
 
 	intersect, isIntersected := findNearestIntersectRecord(ray, entities)
 	if isIntersected {
-		scatterInfo := mats.SurfaceInfo{Position: intersect.Position, Normal: intersect.Normal}
-		scatter, isScattered := (*intersect.Material).Scatter(ray, scatterInfo)
+		scatterInfo := mats.ScatterInfo{
+			Ray:      ray,
+			Position: intersect.Position,
+			Normal:   intersect.Normal,
+			Rng:      rng}
+
+		scatter, isScattered := intersect.Material.Scatter(scatterInfo)
 		if isScattered {
-			return scatter.Attenuation.Mult(this.radiance(scatter.Ray, entities, BounceDepth-1))
+			return scatter.Attenuation.Mult(this.radiance(scatter.Ray, entities, rng, BounceDepth-1))
 		} else {
 			return black
 		}
@@ -99,4 +150,8 @@ func findNearestIntersectRecord(ray core.Ray, entities []entt.Entity) (entt.Inte
 	} else {
 		return *nearestRecord, true
 	}
+}
+
+func GetGoroutineBatchCount(goroutineCount, sampleCount int) int {
+	return int(math.Ceil(float64(sampleCount) / float64(goroutineCount)))
 }

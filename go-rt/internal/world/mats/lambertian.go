@@ -10,8 +10,8 @@ type Lambertian struct {
 	Albedo render.Colour
 }
 
-func (this Lambertian) Scatter(ray core.Ray, info SurfaceInfo) (ScatterResult, bool) {
-	scatterDir := info.Normal.Add(maths.RandVec3InUnitSphere().Normalize())
+func (this Lambertian) Scatter(info ScatterInfo) (ScatterResult, bool) {
+	scatterDir := info.Normal.Add(maths.RandVec3InUnitSphere(info.Rng).Normalize())
 	outputRay := core.Ray{Origin: info.Position, Direction: scatterDir}
 
 	if scatterDir.IsNearZero() {

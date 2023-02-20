@@ -43,7 +43,7 @@ func (this Sphere) IsIntersectedByRay(ray core.Ray, closerThan float64) (Interse
 		Normal:      GetFrontFaceNormal(normal, isFrontFace),
 		Distance:    distance,
 		IsFrontFace: isFrontFace,
-		Material:    &this.Material}
+		Material:    this.Material}
 
 	return record, true
 }
