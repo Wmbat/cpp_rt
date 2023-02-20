@@ -18,7 +18,7 @@ import (
 type Scene struct {
 	Name string
 
-	hitables    []entt.Entity
+	entities    []entt.Entity
 	environment render.Colour
 }
 
@@ -27,15 +27,15 @@ type imageRenderInfo struct {
 }
 
 func NewScene(name string) Scene {
-	return Scene{Name: name, hitables: make([]entt.Entity, 0)}
+	return Scene{Name: name, entities: make([]entt.Entity, 0)}
 }
 
 func (this *Scene) AddEntity(entity entt.Entity) {
-	this.hitables = append(this.hitables, entity)
+	this.entities = append(this.entities, entity)
 }
 
 func (this *Scene) AddEntities(entities []entt.Entity) {
-	this.hitables = append(this.hitables, entities...)
+	this.entities = append(this.entities, entities...)
 }
 
 func (this *Scene) SetEnvironmentColour(colour render.Colour) {
@@ -46,7 +46,7 @@ func (this Scene) Render(cam Camera, config ImageRenderConfig) render.Image {
 	log.Printf("[main] Start render of scene \"%s\"\n", this.Name)
 
 	goroutineCount := runtime.NumCPU()
-	batchCount := GetGoroutineBatchCount(goroutineCount, config.SampleCount)
+	batchCount := getGoroutineBatchCount(goroutineCount, config.SampleCount)
 	leftoverSamples := config.SampleCount
 
 	workerPool := utils.NewWorkerPool(goroutineCount)
@@ -91,6 +91,7 @@ func (this Scene) RenderImage(cam Camera, config ImageRenderConfig) render.Image
 
 	source := rand.NewSource(time.Now().UnixNano())
 	rng := rand.New(source)
+	records := make([]entt.IntersectRecord, len(this.entities))
 
 	for j := image.Height - 1; j >= 0; j-- {
 		for i := int64(0); i < image.Width; i++ {
@@ -100,21 +101,21 @@ func (this Scene) RenderImage(cam Camera, config ImageRenderConfig) render.Image
 
 			ray := cam.ShootRay(camTarget)
 
-			image.AddSample(i, j, this.radiance(ray, this.hitables, rng, config.BounceDepth))
+			image.AddSample(i, j, this.radiance(ray, this.entities, records, rng, config.BounceDepth))
 		}
 	}
 
 	return image
 }
 
-func (this Scene) radiance(ray core.Ray, entities []entt.Entity, rng *rand.Rand, BounceDepth int) render.Colour {
+func (this Scene) radiance(ray core.Ray, entities []entt.Entity, records []entt.IntersectRecord, rng *rand.Rand, BounceDepth int) render.Colour {
 	black := render.Colour{Red: 0.0, Green: 0.0, Blue: 0.0}
 
 	if BounceDepth == 0 {
 		return black
 	}
 
-	intersect, isIntersected := findNearestIntersectRecord(ray, entities)
+	intersect, isIntersected := findNearestIntersectRecord(ray, entities, records)
 	if isIntersected {
 		scatterInfo := mats.ScatterInfo{
 			Ray:      ray,
@@ -124,7 +125,7 @@ func (this Scene) radiance(ray core.Ray, entities []entt.Entity, rng *rand.Rand,
 
 		scatter, isScattered := intersect.Material.Scatter(scatterInfo)
 		if isScattered {
-			return scatter.Attenuation.Mult(this.radiance(scatter.Ray, entities, rng, BounceDepth-1))
+			return scatter.Attenuation.Mult(this.radiance(scatter.Ray, entities, records, rng, BounceDepth-1))
 		} else {
 			return black
 		}
@@ -133,25 +134,26 @@ func (this Scene) radiance(ray core.Ray, entities []entt.Entity, rng *rand.Rand,
 	return this.environment
 }
 
-func findNearestIntersectRecord(ray core.Ray, entities []entt.Entity) (entt.IntersectRecord, bool) {
+func findNearestIntersectRecord(ray core.Ray, entities []entt.Entity, records []entt.IntersectRecord) (*entt.IntersectRecord, bool) {
 	var nearestRecord *entt.IntersectRecord = nil
 
 	nearestDistance := math.Inf(1)
-	for _, entity := range entities {
-		record, isPresent := entity.IsIntersectedByRay(ray, nearestDistance)
+	for i, entity := range entities {
+		isPresent := false
+		records[i], isPresent = entity.IsIntersectedByRay(ray, nearestDistance)
 		if isPresent {
-			nearestDistance = record.Distance
-			nearestRecord = &record
+			nearestDistance = records[i].Distance
+			nearestRecord = &records[i]
 		}
 	}
 
 	if nearestRecord == nil {
-		return entt.IntersectRecord{}, false
+		return &entt.IntersectRecord{}, false
 	} else {
-		return *nearestRecord, true
+		return nearestRecord, true
 	}
 }
 
-func GetGoroutineBatchCount(goroutineCount, sampleCount int) int {
+func getGoroutineBatchCount(goroutineCount, sampleCount int) int {
 	return int(math.Ceil(float64(sampleCount) / float64(goroutineCount)))
 }

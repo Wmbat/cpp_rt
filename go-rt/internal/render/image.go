@@ -2,6 +2,7 @@ package render
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/wmbat/ray_tracer/internal/maths"
@@ -53,7 +54,7 @@ func (this Image) SaveAsPPM(filename string) {
 	}
 	defer file.Close()
 
-	fmt.Printf("Saving image \"%s\" to disk\n", filename)
+	log.Printf("[main] Saving image \"%s\" to disk\n", filename)
 
 	file.WriteString(fmt.Sprintf("P3\n%d %d\n255\n", this.Width, this.Height))
 	for y := int64(0); y < this.Height; y++ {
@@ -68,7 +69,7 @@ func (this Image) SaveAsPPM(filename string) {
 
 func TryDeletingExistingImage(filename string) {
 	if utils.DoesFileExist(filename) {
-		fmt.Printf("Deleting existing \"%s\" file\n", filename)
+		log.Printf("[main] Deleting existing \"%s\" file\n", filename)
 
 		os.Remove(filename)
 	}
