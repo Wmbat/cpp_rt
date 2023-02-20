@@ -14,7 +14,7 @@ import (
 )
 
 const aspectRatio float32 = 16.0 / 9.0
-const imageWidth int = 1280
+const imageWidth int = 1920
 const imageHeight int = int((float32(imageWidth) / aspectRatio))
 
 var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
@@ -44,27 +44,41 @@ func main() {
 		Position: maths.Point3{X: 0, Y: 0, Z: 1},
 		Radius:   0.5,
 		Material: mats.Lambertian{Albedo: render.Colour{Red: 0.7, Green: 0.3, Blue: 0.3}}})
+
+	// Floor
 	mainScene.AddEntity(entt.Sphere{
 		Position: maths.Point3{X: 0, Y: -100.5, Z: 1},
 		Radius:   100,
 		Material: mats.Lambertian{Albedo: render.Colour{Red: 0.8, Green: 0.8, Blue: 0.0}}})
+
+	// Glass
 	mainScene.AddEntity(entt.Sphere{
 		Position: maths.Point3{X: -1, Y: 0, Z: 1},
 		Radius:   0.5,
-		Material: mats.Metal{
-			Albedo: render.Colour{Red: 0.8, Green: 0.8, Blue: 0.8},
-			Roughness: 0.3}})
+		Material: mats.Dielectric{
+			Diffuse: render.Colour{Red: 1.0, Green: 1.0, Blue: 1.0}, 
+			RefractionIndex: 1.5}})
+
+	mainScene.AddEntity(entt.Sphere{
+		Position: maths.Point3{X: -1, Y: 0, Z: 1},
+		Radius:   -0.4,
+		Material: mats.Dielectric{
+			Diffuse: render.Colour{Red: 1.0, Green: 1.0, Blue: 1.0}, 
+			RefractionIndex: 1.5}})
+
+
+	// Metal
 	mainScene.AddEntity(entt.Sphere{
 		Position: maths.Point3{X: 1, Y: 0, Z: 1},
 		Radius:   0.5,
 		Material: mats.Metal{
-			Albedo: render.Colour{Red: 0.8, Green: 0.6, Blue: 0.2},
-			Roughness: 1.0}})
+			Albedo:    render.Colour{Red: 0.8, Green: 0.6, Blue: 0.2},
+			Roughness: 0.0}})
 
 	image := mainScene.Render(camera, world.ImageRenderConfig{
 		ImageSize:   maths.Size2[int]{Width: imageWidth, Height: imageHeight},
 		SampleCount: 1000,
-		BounceDepth: 50,
+		BounceDepth: 100,
 	})
 
 	image.SaveAsPPM(sceneName)

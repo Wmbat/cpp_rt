@@ -118,10 +118,11 @@ func (this Scene) radiance(ray core.Ray, entities []entt.Entity, records []entt.
 	intersect, isIntersected := findNearestIntersectRecord(ray, entities, records)
 	if isIntersected {
 		scatterInfo := mats.ScatterInfo{
-			Ray:      ray,
-			Position: intersect.Position,
-			Normal:   intersect.Normal,
-			Rng:      rng}
+			Ray:         ray,
+			Position:    intersect.Position,
+			Normal:      intersect.Normal,
+			IsFrontFace: intersect.IsFrontFace,
+			Rng:         rng}
 
 		scatter, isScattered := intersect.Material.Scatter(scatterInfo)
 		if isScattered {

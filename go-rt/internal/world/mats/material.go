@@ -15,10 +15,11 @@ type ScatterResult struct {
 
 // Information about where the ray hit
 type ScatterInfo struct {
-	Ray      core.Ray
-	Position maths.Point3 // The position where the material surface was hit
-	Normal   maths.Vec3   // The normal at the position on thu material surface
-	Rng      *rand.Rand
+	Ray         core.Ray
+	Position    maths.Point3 // The position where the material surface was hit
+	Normal      maths.Vec3   // The normal at the position on thu material surface
+	IsFrontFace bool
+	Rng         *rand.Rand
 }
 
 type Material interface {
