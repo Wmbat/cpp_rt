@@ -13,9 +13,9 @@ import (
 	"github.com/wmbat/ray_tracer/internal/world/mats"
 )
 
-const aspectRatio float64 = 16.0 / 9.0
-const imageWidth int64 = 1280
-const imageHeight int64 = int64((float64(imageWidth) / aspectRatio))
+const aspectRatio float32 = 16.0 / 9.0
+const imageWidth int = 1280
+const imageHeight int = int((float32(imageWidth) / aspectRatio))
 
 var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
 
@@ -33,7 +33,7 @@ func main() {
 		defer pprof.StopCPUProfile()
 	}
 
-	viewport := maths.Size2f{Width: aspectRatio * 2.0, Height: 2.0}
+	viewport := maths.Size2[float32]{Width: aspectRatio * 2.0, Height: 2.0}
 	camera := world.NewCamera(maths.Point3{X: 0, Y: 0, Z: 0}, viewport, 1.0)
 
 	sceneName := "Test Scene"
@@ -58,7 +58,7 @@ func main() {
 		Material: mats.Metal{Albedo: render.Colour{Red: 0.8, Green: 0.6, Blue: 0.2}}})
 
 	image := mainScene.Render(camera, world.ImageRenderConfig{
-		ImageSize:   maths.Size2i{Width: imageWidth, Height: imageHeight},
+		ImageSize:   maths.Size2[int]{Width: imageWidth, Height: imageHeight},
 		SampleCount: 1000,
 		BounceDepth: 50,
 	})

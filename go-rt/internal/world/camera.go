@@ -13,9 +13,9 @@ type Camera struct {
 	FocalLength     float64
 }
 
-func NewCamera(origin maths.Point3, viewport maths.Size2f, focalLength float64) Camera {
-	horizontal := maths.Vec3{X: viewport.Width, Y: 0, Z: 0}
-	vertical := maths.Vec3{X: 0, Y: viewport.Height, Z: 0}
+func NewCamera(origin maths.Point3, viewport maths.Size2[float32], focalLength float64) Camera {
+	horizontal := maths.Vec3{X: float64(viewport.Width), Y: 0, Z: 0}
+	vertical := maths.Vec3{X: 0, Y: float64(viewport.Height), Z: 0}
 
 	horizontalMidpoint := horizontal.Scale(0.5).ToPoint3()
 	verticalMidpoint := vertical.Scale(0.5).ToPoint3()
@@ -31,7 +31,7 @@ func NewCamera(origin maths.Point3, viewport maths.Size2f, focalLength float64) 
 		FocalLength:     focalLength}
 }
 
-func (this Camera) ShootRay(camTarget maths.Point2) core.Ray {
+func (this Camera) ShootRay(camTarget maths.Point2[float64]) core.Ray {
 	scaledHorizontal := this.Horizontal.Scale(camTarget.X)
 	scaledVertical := this.Vertical.Scale(camTarget.Y)
 

@@ -11,30 +11,30 @@ import (
 
 // TODO: store width and height as Size2i struct
 type Image struct {
-	Width  int64
-	Height int64
+	Width  int
+	Height int
 	Pixels []Pixel
 }
 
-func NewImage(size maths.Size2i) Image {
+func NewImage(size maths.Size2[int]) Image {
 	return Image{
 		Width:  size.Width,
 		Height: size.Height,
 		Pixels: make([]Pixel, (size.Width * size.Height))}
 }
 
-func (this *Image) AddSample(x int64, y int64, colour Colour) {
+func (this *Image) AddSample(x, y int, colour Colour) {
 	index := x + (y * this.Width)
 	this.Pixels[index].AddSample(colour)
 }
 
-func (this *Image) AddSamplePixel(x, y int64, pixel Pixel) {
+func (this *Image) AddSamplePixel(x, y int, pixel Pixel) {
 	index := x + (y * this.Width)
 	this.Pixels[index].AddSamplePixel(pixel)
 }
 
 func (this *Image) AddSampleImage(rhs Image) {
-	for y := int64(0); y < this.Height; y++ {
+	for y := 0; y < this.Height; y++ {
 		for x := this.Width - 1; x >= 0; x-- {
 			index := x + (y * this.Width)
 			this.AddSamplePixel(x, y, rhs.Pixels[index])
@@ -57,7 +57,7 @@ func (this Image) SaveAsPPM(filename string) {
 	log.Printf("[main] Saving image \"%s\" to disk\n", filename)
 
 	file.WriteString(fmt.Sprintf("P3\n%d %d\n255\n", this.Width, this.Height))
-	for y := int64(0); y < this.Height; y++ {
+	for y := 0; y < this.Height; y++ {
 		for x := this.Width - 1; x >= 0; x-- {
 			index := x + (y * this.Width)
 			colour := this.Pixels[index].GetSampledColour().ToTrueColour()

@@ -94,8 +94,8 @@ func (this Scene) RenderImage(cam Camera, config ImageRenderConfig) render.Image
 	records := make([]entt.IntersectRecord, len(this.entities))
 
 	for j := image.Height - 1; j >= 0; j-- {
-		for i := int64(0); i < image.Width; i++ {
-			camTarget := maths.Point2{
+		for i := 0; i < image.Width; i++ {
+			camTarget := maths.Point2[float64]{
 				X: (float64(i) + rng.Float64()) / float64(image.Width-1),
 				Y: (float64(j) + rng.Float64()) / float64(image.Height-1)}
 
