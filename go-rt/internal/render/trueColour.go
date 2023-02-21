@@ -3,9 +3,7 @@ package render
 import "fmt"
 
 type TrueColour struct {
-	Red uint8
-	Green uint8
-	Blue uint8
+	Red, Green, Blue uint8
 }
 
 func (this TrueColour) String() string {

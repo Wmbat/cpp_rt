@@ -3,9 +3,7 @@ package maths
 import "fmt"
 
 type Point3 struct {
-	X float64
-	Y float64
-	Z float64
+	X, Y, Z float64
 }
 
 func (this Point3) Clone() Point3 {

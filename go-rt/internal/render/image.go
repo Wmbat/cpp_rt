@@ -11,8 +11,7 @@ import (
 
 // TODO: store width and height as Size2i struct
 type Image struct {
-	Width  int
-	Height int
+	Width, Height int
 	Pixels []Pixel
 }
 

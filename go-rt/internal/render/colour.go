@@ -6,24 +6,21 @@ import (
 	"github.com/wmbat/ray_tracer/internal/maths"
 )
 
+// Represents a raw colour used by the ray tracer
 type Colour struct {
-	Red   float64
-	Green float64
-	Blue  float64
+	Red, Green, Blue  float64
 }
 
+// Convert a 3d vector to a colour
 func ColourFromVec3(vec maths.Vec3) Colour {
 	return Colour{vec.X, vec.Y, vec.Z}
-}
-
-func (this Colour) Clone() Colour {
-	return Colour{this.Red, this.Green, this.Blue}
 }
 
 func (this Colour) String() string {
 	return fmt.Sprintf("%f %f %f", this.Red, this.Green, this.Blue)
 }
 
+// Add one colour to another and returns the resultant colour
 func (lhs Colour) Add(rhs Colour) Colour {
 	return Colour{
 		Red:   lhs.Red + rhs.Red,
@@ -31,6 +28,7 @@ func (lhs Colour) Add(rhs Colour) Colour {
 		Blue:  lhs.Blue + rhs.Blue}
 }
 
+// Subtract one colour to another and returns the resultant colour
 func (lhs Colour) Sub(rhs Colour) Colour {
 	return Colour{
 		Red:   lhs.Red - rhs.Red,
@@ -38,6 +36,7 @@ func (lhs Colour) Sub(rhs Colour) Colour {
 		Blue:  lhs.Blue - rhs.Blue}
 }
 
+// Multiply one colour to another and returns the resultant colour
 func (lhs Colour) Mult(rhs Colour) Colour {
 	return Colour{
 		Red:   lhs.Red * rhs.Red,
@@ -45,6 +44,7 @@ func (lhs Colour) Mult(rhs Colour) Colour {
 		Blue:  lhs.Blue * rhs.Blue}
 }
 
+// Scale the colour by a scalar factor
 func (lhs Colour) Scale(scalar float64) Colour {
 	return Colour{
 		Red:   lhs.Red * scalar,
@@ -52,6 +52,7 @@ func (lhs Colour) Scale(scalar float64) Colour {
 		Blue:  lhs.Blue * scalar}
 }
 
+// Convert a raw colour to a true colour.
 func (this Colour) ToTrueColour() TrueColour {
 	rawColour := this.Scale(256.0)
 

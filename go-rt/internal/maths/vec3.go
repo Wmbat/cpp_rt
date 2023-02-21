@@ -6,9 +6,7 @@ import (
 )
 
 type Vec3 struct {
-	X float64
-	Y float64
-	Z float64
+	X, Y, Z float64
 }
 
 func (this Vec3) Clone() Vec3 {
