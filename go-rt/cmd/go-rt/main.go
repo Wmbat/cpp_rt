@@ -14,7 +14,7 @@ import (
 )
 
 const aspectRatio float32 = 16.0 / 9.0
-const imageWidth int = 1920
+const imageWidth int = 1280
 const imageHeight int = int((float32(imageWidth) / aspectRatio))
 
 var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
@@ -41,26 +41,26 @@ func main() {
 	mainScene := world.NewScene(sceneName)
 	mainScene.SetEnvironmentColour(render.Colour{Red: 135 / 256.0, Green: 206 / 256.0, Blue: 235 / 256.0})
 	mainScene.AddEntity(entt.Sphere{
-		Position: maths.Point3{X: 0, Y: 0, Z: 1},
+		Position: maths.Point3{X: 0, Y: 0, Z: -1},
 		Radius:   0.5,
 		Material: mats.Lambertian{Albedo: render.Colour{Red: 0.7, Green: 0.3, Blue: 0.3}}})
 
 	// Floor
 	mainScene.AddEntity(entt.Sphere{
-		Position: maths.Point3{X: 0, Y: -100.5, Z: 1},
+		Position: maths.Point3{X: 0, Y: -100.5, Z: -1},
 		Radius:   100,
 		Material: mats.Lambertian{Albedo: render.Colour{Red: 0.8, Green: 0.8, Blue: 0.0}}})
 
 	// Glass
 	mainScene.AddEntity(entt.Sphere{
-		Position: maths.Point3{X: -1, Y: 0, Z: 1},
+		Position: maths.Point3{X: -1, Y: 0, Z: -1},
 		Radius:   0.5,
 		Material: mats.Dielectric{
 			Diffuse: render.Colour{Red: 1.0, Green: 1.0, Blue: 1.0}, 
 			RefractionIndex: 1.5}})
 
 	mainScene.AddEntity(entt.Sphere{
-		Position: maths.Point3{X: -1, Y: 0, Z: 1},
+		Position: maths.Point3{X: -1, Y: 0, Z: -1},
 		Radius:   -0.4,
 		Material: mats.Dielectric{
 			Diffuse: render.Colour{Red: 1.0, Green: 1.0, Blue: 1.0}, 
@@ -69,7 +69,7 @@ func main() {
 
 	// Metal
 	mainScene.AddEntity(entt.Sphere{
-		Position: maths.Point3{X: 1, Y: 0, Z: 1},
+		Position: maths.Point3{X: 1, Y: 0, Z: -1},
 		Radius:   0.5,
 		Material: mats.Metal{
 			Albedo:    render.Colour{Red: 0.8, Green: 0.6, Blue: 0.2},

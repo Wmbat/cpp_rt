@@ -13,6 +13,18 @@ type Camera struct {
 	FocalLength     float64
 }
 
+/*
+func Test(lookFrom, lookAt maths.Point3, up maths.Vec3, fov maths.Degree, aspectRatio float64) Camera {
+	theta := maths.DegreesToRadians(fov)
+	h := math.Tan(float64(theta) / 2)
+	viewportHeight := 2.0 * h
+	viewportWidth := aspectRatio * viewportHeight
+
+	w := lookFrom.Sub(lookAt)
+
+}
+*/
+
 func NewCamera(origin maths.Point3, viewport maths.Size2[float32], focalLength float64) Camera {
 	horizontal := maths.Vec3{X: float64(viewport.Width), Y: 0, Z: 0}
 	vertical := maths.Vec3{X: 0, Y: float64(viewport.Height), Z: 0}

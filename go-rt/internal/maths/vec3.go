@@ -37,16 +37,16 @@ func (this Vec3) LengthSquared() float64 {
 
 func (lhs Vec3) Add(rhs Vec3) Vec3 {
 	return Vec3{
-		X: rhs.X + lhs.X,
-		Y: rhs.Y + lhs.Y,
-		Z: rhs.Z + lhs.Z}
+		X: lhs.X + rhs.X,
+		Y: lhs.Y + rhs.Y,
+		Z: lhs.Z + rhs.Z}
 }
 
 func (lhs Vec3) Sub(rhs Vec3) Vec3 {
 	return Vec3{
-		X: rhs.X - lhs.X,
-		Y: rhs.Y - lhs.Y,
-		Z: rhs.Z - lhs.Z}
+		X: lhs.X - rhs.X,
+		Y: lhs.Y - rhs.Y,
+		Z: lhs.Z - rhs.Z}
 }
 
 func (lhs Vec3) Mult(rhs Vec3) Vec3 {
@@ -80,7 +80,7 @@ func (incident Vec3) Reflect(normal Vec3) Vec3 {
 	dot := 2 * DotProduct(incident, normal)
 	reflected := incident.Sub(normal.Scale(dot))
 
-	return reflected.Negate()
+	return reflected
 }
 
 func (incident Vec3) Refract(normal Vec3, iorRatio float64) Vec3 {

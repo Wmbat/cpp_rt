@@ -34,10 +34,10 @@ func (this *Image) AddSamplePixel(x, y int, pixel Pixel) {
 }
 
 func (this *Image) AddSampleImage(rhs Image) {
-	for y := 0; y < this.Height; y++ {
-		for x := this.Width - 1; x >= 0; x-- {
-			index := x + (y * this.Width)
-			this.AddSamplePixel(x, y, rhs.Pixels[index])
+	for j := this.Height - 1; j >= 0; j-- {
+		for i := 0; i < this.Width; i++ {
+			index := i + (j * this.Width)
+			this.AddSamplePixel(i, j, rhs.Pixels[index])
 		}
 	}
 }
@@ -57,9 +57,10 @@ func (this Image) SaveAsPPM(filename string) {
 	log.Printf("[main] Saving image \"%s\" to disk\n", filename)
 
 	file.WriteString(fmt.Sprintf("P3\n%d %d\n255\n", this.Width, this.Height))
-	for y := 0; y < this.Height; y++ {
-		for x := this.Width - 1; x >= 0; x-- {
-			index := x + (y * this.Width)
+
+	for j := this.Height - 1; j >= 0; j-- {
+		for i := 0; i < this.Width; i++ {
+			index := i + (j * this.Width)
 			colour := this.Pixels[index].GetSampledColour().ToTrueColour()
 
 			file.WriteString(fmt.Sprintf("%s\n", colour.String()))
