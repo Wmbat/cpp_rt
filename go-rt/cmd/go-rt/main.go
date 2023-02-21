@@ -13,9 +13,9 @@ import (
 	"github.com/wmbat/ray_tracer/internal/world/mats"
 )
 
-const aspectRatio float32 = 16.0 / 9.0
+const aspectRatio float64 = 16.0 / 9.0
 const imageWidth int = 1280
-const imageHeight int = int((float32(imageWidth) / aspectRatio))
+const imageHeight int = int((float64(imageWidth) / aspectRatio))
 
 var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
 
@@ -33,8 +33,18 @@ func main() {
 		defer pprof.StopCPUProfile()
 	}
 
-	viewport := maths.Size2[float32]{Width: aspectRatio * 2.0, Height: 2.0}
-	camera := world.NewCamera(maths.Point3{X: 0, Y: 0, Z: 0}, viewport, 1.0)
+	lookFrom := maths.Point3{X: -3, Y: 3, Z: 2}
+	lookAt := maths.Point3{X: 0, Y: 0, Z: -1}
+	cameraInfo := world.CameraCreateInfo{
+		LookFrom:    lookFrom,
+		LookAt:      lookAt,
+		Up:          maths.Vec3{X: 0, Y: 1, Z: 0},
+		Fov:         20,
+		AspectRatio: aspectRatio,
+		Aperture:    2.0,
+		FocusDistance: lookFrom.Sub(lookAt).ToVec3().Length(),}
+
+	camera := world.NewCamera(cameraInfo)
 
 	sceneName := "Test Scene"
 
@@ -43,7 +53,7 @@ func main() {
 	mainScene.AddEntity(entt.Sphere{
 		Position: maths.Point3{X: 0, Y: 0, Z: -1},
 		Radius:   0.5,
-		Material: mats.Lambertian{Albedo: render.Colour{Red: 0.7, Green: 0.3, Blue: 0.3}}})
+		Material: mats.Lambertian{Albedo: render.Colour{Red: 0.1, Green: 0.2, Blue: 0.5}}})
 
 	// Floor
 	mainScene.AddEntity(entt.Sphere{
@@ -56,16 +66,15 @@ func main() {
 		Position: maths.Point3{X: -1, Y: 0, Z: -1},
 		Radius:   0.5,
 		Material: mats.Dielectric{
-			Diffuse: render.Colour{Red: 1.0, Green: 1.0, Blue: 1.0}, 
+			Diffuse:         render.Colour{Red: 1.0, Green: 1.0, Blue: 1.0},
 			RefractionIndex: 1.5}})
 
 	mainScene.AddEntity(entt.Sphere{
 		Position: maths.Point3{X: -1, Y: 0, Z: -1},
 		Radius:   -0.4,
 		Material: mats.Dielectric{
-			Diffuse: render.Colour{Red: 1.0, Green: 1.0, Blue: 1.0}, 
+			Diffuse:         render.Colour{Red: 1.0, Green: 1.0, Blue: 1.0},
 			RefractionIndex: 1.5}})
-
 
 	// Metal
 	mainScene.AddEntity(entt.Sphere{

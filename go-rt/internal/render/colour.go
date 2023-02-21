@@ -2,13 +2,18 @@ package render
 
 import (
 	"fmt"
+	"math/rand"
 
 	"github.com/wmbat/ray_tracer/internal/maths"
 )
 
 // Represents a raw colour used by the ray tracer
 type Colour struct {
-	Red, Green, Blue  float64
+	Red, Green, Blue float64
+}
+
+func NewRandColour(rng *rand.Rand) Colour {
+	return Colour{rng.Float64(), rng.Float64(), rng.Float64()}
 }
 
 // Convert a 3d vector to a colour
@@ -57,7 +62,7 @@ func (this Colour) ToTrueColour() TrueColour {
 	rawColour := this.Scale(256.0)
 
 	return TrueColour{
-		Red: uint8(rawColour.Red),
+		Red:   uint8(rawColour.Red),
 		Green: uint8(rawColour.Green),
-		Blue: uint8(rawColour.Blue)}
+		Blue:  uint8(rawColour.Blue)}
 }

@@ -93,13 +93,13 @@ func (this Scene) RenderImage(cam Camera, config ImageRenderConfig) render.Image
 	rng := rand.New(source)
 	records := make([]entt.IntersectRecord, len(this.entities))
 
-	for j := image.Height - 1; j >= 0; j-- {
-		for i := 0; i < image.Width; i++ {
+	for j := image.Size.Height - 1; j >= 0; j-- {
+		for i := 0; i < image.Size.Width; i++ {
 			camTarget := maths.Point2[float64]{
-				X: (float64(i) + rng.Float64()) / float64(image.Width-1),
-				Y: (float64(j) + rng.Float64()) / float64(image.Height-1)}
+				X: (float64(i) + rng.Float64()) / float64(image.Size.Width-1),
+				Y: (float64(j) + rng.Float64()) / float64(image.Size.Height-1)}
 
-			ray := cam.ShootRay(camTarget)
+			ray := cam.ShootRay(camTarget, rng)
 
 			image.AddSample(i, j, this.radiance(ray, this.entities, records, rng, config.BounceDepth))
 		}
